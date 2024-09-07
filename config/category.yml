@@ -1,0 +1,9 @@
+word_category:
+  - subject
+  - thing
+  - place_building
+  - place_inside_building
+  - place_map
+  - day_of_week
+  - direction
+  - vehicle

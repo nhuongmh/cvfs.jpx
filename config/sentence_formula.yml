@@ -1,0 +1,11 @@
+lessons:
+  - minna: 1
+    formulas:
+      - form: "[Subject] は [Job] です"
+        description: Trợ từ は, nghề nghiệp
+        backward: "[Subject] là [Job]"
+      - form: "[Subject] は [Job] ですか"
+        description: Câu nghi vấn
+      - form: "[Subject] は [Job] じゃありませんか"
+        description: Câu nghi vấn
+    
