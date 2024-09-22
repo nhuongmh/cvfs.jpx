@@ -44,8 +44,22 @@ func (jps *jpxService) InitData(ctx context.Context) error {
 		logger.Log.Info().Msgf("word: %v, prop: %v, category: %v", w.Name, w.Properties, w.Category)
 	}
 
+	minaLessons, err := ParseMinnaLessonCfg("config/sentence_formula.yml")
+	if err != nil {
+		return errors.Wrap(err, "failed init sentence formula")
+	}
+
+	for i := range *minaLessons {
+		lesson := (*minaLessons)[i]
+		for f := range lesson.Formulas {
+			formula := lesson.Formulas[f]
+			logger.Log.Info().Msgf("form: %v, description: %v, backward: %v", formula.Form, formula.Description, formula.Backward)
+		}
+	}
+
 	return nil
 }
+
 func (jps *jpxService) SyncWordList(ctx context.Context) error {
 	return model.ErrNotImplemented
 }

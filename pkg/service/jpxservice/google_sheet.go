@@ -69,6 +69,9 @@ func (ggs *ggSheetDatasource) fetchData(spreadsheetId, sheetName string) (*[]jp.
 			continue
 		}
 		word := row[3].(string)
+		if word == "" {
+			word = row[2].(string)
+		}
 
 		w := jp.NewWord(word)
 		w.SetProp(jp.KANA, row[2].(string))

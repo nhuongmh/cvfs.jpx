@@ -1,6 +1,6 @@
 package tsunami
 
-type TsuList struct {
+type Desk struct {
 	Name    string
 	Entries []Entry
 }
