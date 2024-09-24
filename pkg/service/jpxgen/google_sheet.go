@@ -1,9 +1,10 @@
-package jpxservice
+package jpxgen
 
 import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strconv"
 
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model"
@@ -47,7 +48,7 @@ func InitNewGoogleSheetService(googleKeyBase64 string) (*ggSheetDatasource, erro
 	return &ggSheetDatasource{SheetSrv: srv}, nil
 }
 
-func (ggs *ggSheetDatasource) fetchData(spreadsheetId, sheetName string) (*[]jp.Word, error) {
+func (ggs *ggSheetDatasource) fetchWords(spreadsheetId, sheetName string) (*[]jp.Word, error) {
 	// https://docs.google.com/spreadsheets/d/<SPREADSHEETID>/edit#gid=<SHEETID>
 
 	logger.Log.Info().Msgf("Fetching data from google sheet %v (%v)", spreadsheetId, sheetName)
@@ -83,4 +84,47 @@ func (ggs *ggSheetDatasource) fetchData(spreadsheetId, sheetName string) (*[]jp.
 	}
 
 	return &wordList, nil
+}
+
+func (ggs *ggSheetDatasource) fetchFormulas(spreadsheetId, sheetName string) (*[]jp.SentenceFormula, error) {
+	logger.Log.Info().Msgf("Fetching data from google sheet %v (%v)", spreadsheetId, sheetName)
+	readRange := fmt.Sprintf("%s!A2:H", sheetName)
+	resp, err := ggs.SheetSrv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Unable to retrieve data from sheet")
+	}
+
+	if len(resp.Values) == 0 {
+		logger.Log.Warn().Msg("No data found.")
+		return nil, model.ErrNoData
+	}
+
+	formulas := make([]jp.SentenceFormula, 0, 20)
+	for _, row := range resp.Values {
+		// fmt.Printf("%s, %s, %s\n", row[3], row[5], row[6])
+		if len(row) < 4 {
+			continue
+		}
+		minnaStr := row[0].(string)
+		form := row[1].(string)
+		backward := row[2].(string)
+		description := row[3].(string)
+
+		minna, err := strconv.ParseInt(minnaStr, 0, 32)
+		if err != nil {
+			logger.Log.Warn().Msgf("parse minna lesson wrong with minna: %v", minnaStr)
+			minna = 0
+		}
+
+		formula := jp.SentenceFormula{
+			Minna:       int(minna),
+			Form:        form,
+			Description: description,
+			Backward:    backward,
+		}
+
+		formulas = append(formulas, formula)
+	}
+
+	return &formulas, nil
 }

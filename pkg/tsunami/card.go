@@ -1,6 +1,9 @@
 package tsunami
 
-type Entry struct {
-	Name       string
-	Properties map[string]string
+type Card struct {
+	Question string
+}
+
+func (c *Card) Answer() string {
+	return ""
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -26,6 +28,16 @@ type DB struct {
 }
 
 func ConnectDB(ctx context.Context, dbFileUrl string) (*DB, error) {
+	dir := filepath.Dir(dbFileUrl)
+	// Check if the directory exists
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		logger.Log.Info().Msgf("creating %v directory for first time lauch", dir)
+		// Directory does not exist, create it
+		err := os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to create %v directory", dir)
+		}
+	}
 	db, err := sql.Open("sqlite3", dbFileUrl)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed open database file")

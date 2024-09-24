@@ -9,7 +9,7 @@ import (
 )
 
 type JpxController struct {
-	JpxService jp.JpxService
+	JpxService jp.JpxGeneratorService
 }
 
 type ErrorResponse struct {

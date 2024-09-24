@@ -12,13 +12,14 @@ import (
 )
 
 type Env struct {
-	AppMode             string `mapstructure:"APP_MODE"`
-	ContextTimeout      int    `mapstructure:"CONTEXT_TIMEOUT"`
-	ServerAddress       string `mapstructure:"SERVER_ADDRESS"`
-	SqliteDBUrl         string `mapstructure:"SQLITE_DB_URL"`
-	GoogleKeyBase64     string `mapstructure:"GOOGLE_API_KEY_BASE64"`
-	GoogleSpreadSheetId string `mapstructure:"GOOGLE_SPREADSHEET_ID"`
-	GoogleSheetName     string `mapstructure:"GOOGLE_SHEET_NAME"`
+	AppMode                string `mapstructure:"APP_MODE"`
+	ContextTimeout         int    `mapstructure:"CONTEXT_TIMEOUT"`
+	ServerAddress          string `mapstructure:"SERVER_ADDRESS"`
+	SqliteDBUrl            string `mapstructure:"SQLITE_DB_URL"`
+	GoogleKeyBase64        string `mapstructure:"GOOGLE_API_KEY_BASE64"`
+	GoogleSpreadSheetId    string `mapstructure:"GOOGLE_SPREADSHEET_ID"`
+	GoogleWordSheetName    string `mapstructure:"GOOGLE_WORD_SHEET_NAME"`
+	GoogleFormulaSheetName string `mapstructure:"GOOGLE_FORMULA_SHEET_NAME"`
 }
 
 func NewEnv() *Env {

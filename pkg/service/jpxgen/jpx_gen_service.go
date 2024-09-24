@@ -1,4 +1,4 @@
-package jpxservice
+package jpxgen
 
 import (
 	"context"
@@ -13,11 +13,11 @@ import (
 
 type jpxService struct {
 	contextTimeout time.Duration
-	jpxRepo        jp.JpxRepository
+	jpxRepo        jp.JpxGeneratorRepository
 	env            *bootstrap.Env
 }
 
-func NewJpxService(repo jp.JpxRepository, timeout time.Duration, env *bootstrap.Env) jp.JpxService {
+func NewJpxService(repo jp.JpxGeneratorRepository, timeout time.Duration, env *bootstrap.Env) jp.JpxGeneratorService {
 	jps := &jpxService{
 		contextTimeout: timeout,
 		jpxRepo:        repo,
@@ -34,7 +34,7 @@ func (jps *jpxService) InitData(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "init google service failed")
 	}
-	wordList, err := ggService.fetchData(jps.env.GoogleSpreadSheetId, jps.env.GoogleSheetName)
+	wordList, err := ggService.fetchWords(jps.env.GoogleSpreadSheetId, jps.env.GoogleWordSheetName)
 	if err != nil {
 		return errors.Wrap(err, "fetching data from google sheet failed")
 	}
@@ -44,23 +44,25 @@ func (jps *jpxService) InitData(ctx context.Context) error {
 		logger.Log.Info().Msgf("word: %v, prop: %v, category: %v", w.Name, w.Properties, w.Category)
 	}
 
-	minaLessons, err := ParseMinnaLessonCfg("config/sentence_formula.yml")
+	formulas, err := ggService.fetchFormulas(jps.env.GoogleSpreadSheetId, jps.env.GoogleFormulaSheetName)
 	if err != nil {
 		return errors.Wrap(err, "failed init sentence formula")
 	}
 
-	for i := range *minaLessons {
-		lesson := (*minaLessons)[i]
-		for f := range lesson.Formulas {
-			formula := lesson.Formulas[f]
-			logger.Log.Info().Msgf("form: %v, description: %v, backward: %v", formula.Form, formula.Description, formula.Backward)
-		}
+	for i := range *formulas {
+		formula := (*formulas)[i]
+		logger.Log.Info().Msgf("form: %v, description: %v, backward: %v", formula.Form, formula.Description, formula.Backward)
 	}
 
 	return nil
 }
 
 func (jps *jpxService) SyncWordList(ctx context.Context) error {
+	return model.ErrNotImplemented
+}
+
+func (jps *jpxService) GenSentences(ctx context.Context) error {
+
 	return model.ErrNotImplemented
 }
 

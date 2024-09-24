@@ -7,3 +7,8 @@ type Base struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type Entry struct {
+	Name       string
+	Properties map[string]string
+}

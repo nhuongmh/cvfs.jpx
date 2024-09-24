@@ -1,6 +1,8 @@
 package tsunami
 
+import "github.com/nhuongmh/cfvs.jpx/pkg/model"
+
 type Desk struct {
 	Name    string
-	Entries []Entry
+	Entries []model.Entry
 }
