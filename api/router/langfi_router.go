@@ -17,4 +17,6 @@ func NewJpxServiceRouter(app *bootstrap.Application, timeout time.Duration, publ
 	tc := &controller.JpxController{JpxService: ts}
 
 	privateRouter.PUT(DEFAULT_API_PREFIX+"/jpx/initdb", tc.InitData)
+	privateRouter.PUT(DEFAULT_API_PREFIX+"/jpx/buildcards", tc.GenerateProposalCards)
+	privateRouter.GET(DEFAULT_API_PREFIX+"/jpx/words", tc.GetWordList)
 }

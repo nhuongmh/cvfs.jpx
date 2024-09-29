@@ -16,9 +16,13 @@ const (
 // card state
 const (
 	CARD_PROPOSAL_NEW     = "New"
-	CARD_PROPOSAL_TOLEARN = "New"
-	CARD_PROPOSAL_DISCARD = "New"
-	CARD_PROPOSAL_SAVED   = "New"
+	CARD_PROPOSAL_TOLEARN = "ToLearn"
+	CARD_PROPOSAL_DISCARD = "Discard"
+	CARD_PROPOSAL_SAVED   = "Save"
+)
+
+const (
+	MAX_CARDS_PER_FORMULA = 8
 )
 
 type Word struct {
@@ -36,9 +40,10 @@ type SentenceFormula struct {
 
 type CardProposal struct {
 	model.Base
-	Front string `json:"front"`
-	Back  string `json:"back"`
-	State string `json:"state"`
+	Front     string `json:"front"`
+	Back      string `json:"back"`
+	State     string `json:"state"`
+	FormulaID int    `json:"formula_id"`
 }
 
 func NewWord(w string) Word {
@@ -72,6 +77,8 @@ func (w *Word) getPropOrEmpty(key string) string {
 type JpxGeneratorService interface {
 	InitData(ctx context.Context) error
 	SyncWordList(ctx context.Context) error
+	GetWordList(ctx context.Context) *[]Word
+	BuildCards(ctx context.Context) (*[]CardProposal, error)
 }
 
 type JpxGeneratorRepository interface {
