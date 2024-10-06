@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/nhuongmh/cfvs.jpx/pkg/model"
+	"github.com/open-spaced-repetition/go-fsrs/v3"
 )
 
 const (
@@ -44,6 +45,24 @@ type CardProposal struct {
 	Back      string `json:"back"`
 	State     string `json:"state"`
 	FormulaID int    `json:"formula_id"`
+}
+
+type ReviewCard struct {
+	FsrsData   fsrs.Card
+	Front      string `json:"front"`
+	Back       string `json:"back"`
+	FormulaId  int    `json:"formula_id"`
+	ProposalId uint64 `json:"proposal_id"`
+}
+
+func NewReviewCard(p CardProposal) ReviewCard {
+	return ReviewCard{
+		FsrsData:   fsrs.NewCard(),
+		Front:      p.Front,
+		Back:       p.Back,
+		FormulaId:  p.FormulaID,
+		ProposalId: p.ID,
+	}
 }
 
 func NewWord(w string) Word {
