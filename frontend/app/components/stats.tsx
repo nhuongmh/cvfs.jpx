@@ -1,14 +1,14 @@
 import { Redis } from "@upstash/redis";
 
-const redis = Redis.fromEnv();
+// const redis = Redis.fromEnv();
 export const revalidate = 60;
 
 export const Stats = asyncComponent(async () => {
-  const [reads, writes] = await redis
-    .pipeline()
-    .get("envshare:metrics:reads")
-    .get("envshare:metrics:writes")
-    .exec<[number, number]>();
+  // const [reads, writes] = await redis
+  //   .pipeline()
+  //   .get("envshare:metrics:reads")
+  //   .get("envshare:metrics:writes")
+  //   .exec<[number, number]>();
   const stars = await fetch("https://api.github.com/repos/chronark/envshare")
     .then((res) => res.json())
     .then((json) => json.stargazers_count as number);
@@ -16,11 +16,11 @@ export const Stats = asyncComponent(async () => {
   const stats = [
     {
       label: "Documents Encrypted",
-      value: writes,
+      value: 3,
     },
     {
       label: "Documents Decrypted",
-      value: reads,
+      value: 2,
     },
   ] satisfies { label: string; value: number }[];
 

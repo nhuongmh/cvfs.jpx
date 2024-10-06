@@ -40,7 +40,7 @@ export default function RootLayout({
               </Link>
             </p>
             <p>
-              EnvShare is deployed on{" "}
+              .langfi is deployed on{" "}
               <Link target="_blank" href="https://vercel.com" className="underline duration-150 hover:text-zinc-200">
                 Vercel
               </Link>{" "}
