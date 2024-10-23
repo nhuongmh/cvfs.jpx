@@ -12,21 +12,22 @@ import (
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model/jp"
+	"github.com/nhuongmh/cfvs.jpx/pkg/model/langfi"
 	"github.com/pkg/errors"
 )
 
 type jpxService struct {
 	contextTimeout time.Duration
-	jpxRepo        jp.JpxGeneratorRepository
+	repo           langfi.PracticeRepo
 	env            *bootstrap.Env
 	ggService      *ggSheetDatasource
 	wordList       *[]jp.Word
 }
 
-func NewJpxService(repo jp.JpxGeneratorRepository, timeout time.Duration, env *bootstrap.Env) jp.JpxGeneratorService {
+func NewJpxService(repo langfi.PracticeRepo, timeout time.Duration, env *bootstrap.Env) jp.JpxGeneratorService {
 	jps := &jpxService{
 		contextTimeout: timeout,
-		jpxRepo:        repo,
+		repo:           repo,
 		env:            env,
 	}
 	jps.InitData(context.Background())
@@ -67,7 +68,7 @@ func (jps *jpxService) GetWordList(ctx context.Context) *[]jp.Word {
 }
 
 // using google service to build cards based on words and setences formula from google sheet
-func (jps *jpxService) BuildCards(ctx context.Context) (*[]jp.CardProposal, error) {
+func (jps *jpxService) BuildCards(ctx context.Context) (*[]langfi.ReviewCard, error) {
 	if !jps.checkInitialized() {
 		return nil, model.ErrServiceIsNotInitialized
 	}
@@ -77,7 +78,7 @@ func (jps *jpxService) BuildCards(ctx context.Context) (*[]jp.CardProposal, erro
 		return nil, errors.Wrap(err, "failed init sentence formula")
 	}
 
-	proposalList := []jp.CardProposal{}
+	proposalList := []langfi.ReviewCard{}
 
 	sentenceVarRegex := regexp.MustCompile(`\[(\w+)\]`)
 	for i := range *formulas {
@@ -104,11 +105,7 @@ func (jps *jpxService) BuildCards(ctx context.Context) (*[]jp.CardProposal, erro
 		}
 
 		if buildSuccess {
-			newCard := jp.CardProposal{
-				Front: sentence,
-				Back:  meaning,
-				State: jp.CARD_PROPOSAL_NEW,
-			}
+			newCard := langfi.NewReviewCard(sentence, meaning)
 
 			proposalList = append(proposalList, newCard)
 		}
@@ -116,6 +113,20 @@ func (jps *jpxService) BuildCards(ctx context.Context) (*[]jp.CardProposal, erro
 
 	if len(proposalList) == 0 {
 		return nil, errors.Wrap(model.ErrNoData, "No proposal card generated")
+	}
+
+	// check if card exist -> if not, insert to db
+
+	for i := range proposalList {
+		card := proposalList[i]
+		_, err := jps.repo.FetchReviewCard(ctx, card.Front)
+		if err != nil {
+			logger.Log.Info().Msgf("card %v not exist, trying to insert", card.Front)
+			err = jps.repo.AddCard(ctx, &card)
+			if err != nil {
+				logger.Log.Error().Err(err).Msgf("failed to insert card %v", card.Front)
+			}
+		}
 	}
 
 	return &proposalList, nil
@@ -139,6 +150,20 @@ func (jps *jpxService) randomWordFromCategory(cat string) (*jp.Word, error) {
 
 func (jps *jpxService) checkInitialized() bool {
 	return jps.ggService != nil && jps.wordList != nil
+}
+
+func (jps *jpxService) FetchProposal(ctx context.Context) (*langfi.ReviewCard, error) {
+	return jps.repo.FetchUnProcessCard(ctx, "")
+}
+
+func (jps *jpxService) SubmitProposal(ctx context.Context, cardID uint64, newStatus string) error {
+	card, err := jps.repo.GetCard(ctx, cardID)
+	if err != nil {
+		return errors.Wrap(err, "failed to get card")
+	}
+
+	card.Status = newStatus
+	return jps.repo.UpdateCard(ctx, card)
 }
 
 //generate practice sentence

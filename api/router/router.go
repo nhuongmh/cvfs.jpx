@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nhuongmh/cfvs.jpx/bootstrap"
+	"github.com/nhuongmh/cfvs.jpx/pkg/service/jpxpractice/repo"
 )
 
 const (
@@ -20,5 +21,6 @@ func Setup(app *bootstrap.Application, timeout time.Duration, gine *gin.Engine) 
 	publicRouter.Use(cors.Default())
 	publicRouter.Static("/data", "./data")
 
-	NewJpxServiceRouter(app, timeout, publicRouter, privateRouter)
+	tr := repo.NewJpxPraticeRepo(app.DB)
+	NewJpxServiceRouter(app, tr, timeout, publicRouter, privateRouter)
 }

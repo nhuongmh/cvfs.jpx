@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/nhuongmh/cfvs.jpx/pkg/model"
-	"github.com/open-spaced-repetition/go-fsrs/v3"
+	"github.com/nhuongmh/cfvs.jpx/pkg/model/langfi"
 )
 
 const (
@@ -15,12 +15,6 @@ const (
 )
 
 // card state
-const (
-	CARD_PROPOSAL_NEW     = "New"
-	CARD_PROPOSAL_TOLEARN = "ToLearn"
-	CARD_PROPOSAL_DISCARD = "Discard"
-	CARD_PROPOSAL_SAVED   = "Save"
-)
 
 const (
 	MAX_CARDS_PER_FORMULA = 8
@@ -39,31 +33,13 @@ type SentenceFormula struct {
 	Backward    string `json:"backward"`
 }
 
-type CardProposal struct {
-	model.Base
-	Front     string `json:"front"`
-	Back      string `json:"back"`
-	State     string `json:"state"`
-	FormulaID int    `json:"formula_id"`
-}
-
-type ReviewCard struct {
-	FsrsData   fsrs.Card
-	Front      string `json:"front"`
-	Back       string `json:"back"`
-	FormulaId  int    `json:"formula_id"`
-	ProposalId uint64 `json:"proposal_id"`
-}
-
-func NewReviewCard(p CardProposal) ReviewCard {
-	return ReviewCard{
-		FsrsData:   fsrs.NewCard(),
-		Front:      p.Front,
-		Back:       p.Back,
-		FormulaId:  p.FormulaID,
-		ProposalId: p.ID,
-	}
-}
+// type CardProposal struct {
+// 	model.Base
+// 	Front     string `json:"front"`
+// 	Back      string `json:"back"`
+// 	State     string `json:"state"`
+// 	FormulaID int    `json:"formula_id"`
+// }
 
 func NewWord(w string) Word {
 	return Word{
@@ -97,16 +73,13 @@ type JpxGeneratorService interface {
 	InitData(ctx context.Context) error
 	SyncWordList(ctx context.Context) error
 	GetWordList(ctx context.Context) *[]Word
-	BuildCards(ctx context.Context) (*[]CardProposal, error)
+	BuildCards(ctx context.Context) (*[]langfi.ReviewCard, error)
+	FetchProposal(ctx context.Context) (*langfi.ReviewCard, error)
+	SubmitProposal(ctx context.Context, cardID uint64, status string) error
+	// GetProcessGroups(ctx context.Context) []string
 }
 
-type JpxGeneratorRepository interface {
-	AddCardProposals(ctx context.Context, cards *[]CardProposal) (*[]CardProposal, error)
-	ModifyCard(ctx context.Context, card *CardProposal) error
-}
-
-type JpxPracticeService interface {
-}
-
-type JpxPracticeRepository interface {
-}
+// type JpxGeneratorRepository interface {
+// 	AddCardProposals(ctx context.Context, cards *[]CardProposal) (*[]CardProposal, error)
+// 	ModifyCard(ctx context.Context, card *CardProposal) error
+// }

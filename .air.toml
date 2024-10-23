@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./main"
-  cmd = "make build"
+  bin = "./jpx.exe"
+  cmd = "go.exe build ./cmd/jpx"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
