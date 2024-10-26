@@ -125,6 +125,9 @@ func (rp *practiceRepo) FetchReviewCard(ctx context.Context, groupID string) (*l
 	var properties string
 	err = row.Scan(&card.ID, &card.Front, &card.Back, &properties, &card.Status)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, model.ErrNoMoreDataAvailable
+		}
 		return nil, errors.Wrap(err, "failed to scan card")
 	}
 	card.SetPropertiesFromJson(properties)

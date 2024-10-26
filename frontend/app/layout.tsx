@@ -21,7 +21,7 @@ export default function RootLayout({
           // Not everyone will want to host envshare on Vercel, so it makes sense to make this opt-in.
           process.env.ENABLE_VERCEL_ANALYTICS ? <Analytics /> : null
         }
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+        <Providers themeProps={{ attribute: "class", defaultTheme: "dark", children: children }}>
         <Header />
 
         <main className=" min-h-[80vh] ">{children}</main>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Stats } from "../components/stats";
+import { siteConfig } from "@/config/site";
 
 export default function Home() {
   return (
@@ -19,7 +20,7 @@ export default function Home() {
               Process Learning Data
             </Link>
             <Link
-              href="/share"
+              href="/learn"
               className="sm:w-1/2 sm:text-center inline-block transition-all space-x-2  rounded px-4 py-1.5 md:py-2 text-base font-semibold leading-7 text-zinc-800   bg-zinc-50 ring-1 ring-transparent hover:text-zinc-100 hover:ring-zinc-600/80  hover:bg-zinc-900/20 duration-150 hover:drop-shadow-cta"
             >
               <span>Learn</span>

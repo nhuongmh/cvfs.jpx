@@ -3,10 +3,10 @@ import { FaCheck, FaTimes, FaArchive, FaEdit } from "react-icons/fa";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Input } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "models/card";
+import { siteConfig } from "@/config/site";
 
 const ProposalCheck: React.FC = () => {
   const [selectedLang, setSelectedLang] = useState("jpx");
-  const [selectedGroup, setSelectedGroup] = useState("");
   const [currentCard, setCurrentCard] = useState<Card | null>(null);
   const [currentCardEdit, setCurrentCardEdit] = useState<Card | null>(null);
   const [error, setError] = useState<string>("");
@@ -15,7 +15,7 @@ const ProposalCheck: React.FC = () => {
 
   const fetchCardFromServer = async () => {
     try {
-      const response = await fetch(`http://${process.env.NEXT_PUBLIC_SERVER_URL}/public/api/v1/process/jpx/fetch`);
+      const response = await fetch(`${siteConfig.server_url_prefix}/process/${selectedLang}/fetch`);
       if (!response.ok) {
         const repjson = await response.json();
         throw new Error(`Server responded ${response.status}, ${repjson?.message}`);
@@ -32,7 +32,7 @@ const ProposalCheck: React.FC = () => {
   const submitCardStatus = async (status: string, fetchNext: boolean = true) => {
     if (!currentCard) return;
     try {
-      const url = `http://${process.env.NEXT_PUBLIC_SERVER_URL}/public/api/v1/process/jpx/submit?cardID=${currentCard.id}&status=${status}`;
+      const url = `${siteConfig.server_url_prefix}/process/${selectedLang}/submit?cardID=${currentCard.id}&status=${status}`;
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ const ProposalCheck: React.FC = () => {
     if (!currentCardEdit) return;
     try {
       console.log("updating card: ")
-      const url = `http://${process.env.NEXT_PUBLIC_SERVER_URL}/public/api/v1/process/jpx/edit`;
+      const url = `${siteConfig.server_url_prefix}/process/jpx/edit`;
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
