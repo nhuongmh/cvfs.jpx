@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS sentences (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sentence TEXT NOT NULL,
-    created_at datetime DEFAULT CURRENT_TIMESTAMP,
-    udpated_at datetime DEFAULT CURRENT_TIMESTAMP
+    created_at datetime NOT NULL DEFAULT (datetime('now','localtime')),
+    udpated_at datetime NOT NULL DEFAULT (datetime('now','localtime'))
 );
 
 CREATE TABLE IF NOT EXISTS cards (
@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS cards (
     front TEXT,
     back TEXT,
     properties TEXT,
-    created_at datetime DEFAULT CURRENT_TIMESTAMP,
-    udpated_at datetime DEFAULT CURRENT_TIMESTAMP,
+    created_at datetime NOT NULL DEFAULT (datetime('now','localtime')),
+    udpated_at datetime NOT NULL DEFAULT (datetime('now','localtime')),
     fsrs_id INTEGER,
     status VARCHAR(255),
     FOREIGN KEY(fsrs_id) REFERENCES fsrs(id)

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model/jp"
+	"github.com/nhuongmh/cfvs.jpx/pkg/model/langfi"
 )
 
 type JpxController struct {
@@ -86,4 +87,25 @@ func (jctl *JpxController) SubmitProposal(gc *gin.Context) {
 	}
 
 	gc.JSON(http.StatusOK, "Success")
+}
+
+func (jctl *JpxController) EditProposal(gc *gin.Context) {
+	//get card proposal from gin context
+
+	var newCard langfi.ReviewCard
+	err := gc.BindJSON(&newCard)
+
+	if err != nil {
+		gc.JSON(http.StatusBadRequest, ErrorResponse{Message: "card data is required"})
+		return
+	}
+
+	updated, err := jctl.JpxService.EditCardText(gc, &newCard)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("request process failed")
+		gc.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	gc.JSON(http.StatusOK, updated)
 }

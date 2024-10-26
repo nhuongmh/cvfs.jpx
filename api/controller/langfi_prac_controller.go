@@ -58,3 +58,25 @@ func (pctl *PracticeController) SubmitPracticeCard(gc *gin.Context) {
 
 	gc.JSON(http.StatusOK, "Success")
 }
+
+func (pctl *PracticeController) GetCard(gc *gin.Context) {
+	cardIDStr := gc.Param("card-id")
+	if cardIDStr == "" {
+		gc.JSON(http.StatusBadRequest, ErrorResponse{Message: "cardID is required"})
+		return
+	}
+
+	cardId, err := strconv.ParseUint(cardIDStr, 10, 64)
+	if err != nil {
+		gc.JSON(http.StatusBadRequest, ErrorResponse{Message: "cardID must be a number"})
+		return
+	}
+
+	card, err := pctl.PracticeSrv.GetCard(gc, cardId)
+	if err != nil {
+		gc.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	gc.JSON(http.StatusOK, card)
+}

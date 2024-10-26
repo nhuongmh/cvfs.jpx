@@ -18,6 +18,7 @@ func NewJpxPraServiceRouter(app *bootstrap.Application, repo langfi.PracticeRepo
 	publicRouter.GET(DEFAULT_API_PREFIX+"/practice/:lang-id/groups", tc.GetPracticeGroups)
 	publicRouter.GET(DEFAULT_API_PREFIX+"/practice/:lang-id/:group-id/fetch", tc.FetchPracticeCard)
 	publicRouter.POST(DEFAULT_API_PREFIX+"/practice/:lang-id/:group-id/submit", tc.SubmitPracticeCard)
+	publicRouter.GET(DEFAULT_API_PREFIX+"/card/:card-id", tc.GetCard)
 	// publicRouter.POST(DEFAULT_API_PREFIX+"/practice/:card-id", tc.GetCard)
 
 }

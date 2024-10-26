@@ -162,8 +162,27 @@ func (jps *jpxService) SubmitProposal(ctx context.Context, cardID uint64, newSta
 		return errors.Wrap(err, "failed to get card")
 	}
 
-	card.Status = newStatus
-	return jps.repo.UpdateCard(ctx, card)
+	for _, stat := range langfi.ALL_CARD_STATUS {
+		if strings.EqualFold(newStatus, stat) {
+			card.Status = stat
+			return jps.repo.UpdateCard(ctx, card)
+		}
+	}
+	return errors.Errorf("invalid status %v", newStatus)
+}
+
+func (jps *jpxService) EditCardText(ctx context.Context, newCard *langfi.ReviewCard) (*langfi.ReviewCard, error) {
+	card, err := jps.repo.GetCard(ctx, newCard.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get card with id=%v", newCard.ID)
+	}
+
+	card.Front = newCard.Front
+	card.Back = newCard.Back
+	for k, v := range newCard.Properties {
+		card.SetProp(k, v)
+	}
+	return card, jps.repo.UpdateCard(ctx, card)
 }
 
 //generate practice sentence

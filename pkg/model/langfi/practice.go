@@ -21,6 +21,8 @@ const (
 	CARD_SAVE    = "Save"
 )
 
+var ALL_CARD_STATUS = []string{CARD_NEW, CARD_LEARN, CARD_DISCARD, CARD_SAVE}
+
 type ReviewCard struct {
 	model.Base
 	FsrsData   FSRSData
@@ -70,7 +72,7 @@ func (c *ReviewCard) SetPropertiesFromJson(str string) {
 type PracticeService interface {
 	GetGroups(ctx context.Context) []string
 	FetchCard(ctx context.Context, group string) (*ReviewCard, error)
-	//newState should be Again, Hard, Good, Easy
+	//newState should be Again=1, Hard=2, Good=3, Easy=4
 	SubmitCard(ctx context.Context, cardID, rating uint64) error
 	GetCard(ctx context.Context, cardId uint64) (*ReviewCard, error)
 }

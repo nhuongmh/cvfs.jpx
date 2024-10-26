@@ -77,6 +77,7 @@ type JpxGeneratorService interface {
 	FetchProposal(ctx context.Context) (*langfi.ReviewCard, error)
 	SubmitProposal(ctx context.Context, cardID uint64, status string) error
 	// GetProcessGroups(ctx context.Context) []string
+	EditCardText(ctx context.Context, newCard *langfi.ReviewCard) (*langfi.ReviewCard, error)
 }
 
 // type JpxGeneratorRepository interface {

@@ -23,4 +23,5 @@ func Setup(app *bootstrap.Application, timeout time.Duration, gine *gin.Engine) 
 
 	tr := repo.NewJpxPraticeRepo(app.DB)
 	NewJpxServiceRouter(app, tr, timeout, publicRouter, privateRouter)
+	NewJpxPraServiceRouter(app, tr, timeout, publicRouter, privateRouter)
 }

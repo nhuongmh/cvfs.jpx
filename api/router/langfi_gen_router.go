@@ -20,6 +20,7 @@ func NewJpxServiceRouter(app *bootstrap.Application, repo langfi.PracticeRepo, t
 	publicRouter.GET(DEFAULT_API_PREFIX+"/core/langs", tc.GetAvailableLang)
 	publicRouter.GET(DEFAULT_API_PREFIX+"/process/:lang-id/fetch", tc.FetchProposal)
 	publicRouter.POST(DEFAULT_API_PREFIX+"/process/:lang-id/submit", tc.SubmitProposal)
+	publicRouter.POST(DEFAULT_API_PREFIX+"/process/:lang-id/edit", tc.EditProposal)
 	// publicRouter.GET(DEFAULT_API_PREFIX+"/process/groups", tc.GetProcessGroups)
 	// publicRouter.GET(DEFAULT_API_PREFIX+"/process/:lang-id/:group-id", tc.GetProposalGroups)
 

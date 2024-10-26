@@ -2,9 +2,11 @@ package repo
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/nhuongmh/cfvs.jpx/pkg/database/sqlite3"
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
+	"github.com/nhuongmh/cfvs.jpx/pkg/model"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model/langfi"
 	"github.com/open-spaced-repetition/go-fsrs/v3"
 	"github.com/pkg/errors"
@@ -26,14 +28,20 @@ func (rp *practiceRepo) AddCard(ctx context.Context, card *langfi.ReviewCard) er
 		Values(card.Front, card.Back, card.PropertiesToJson(), card.Status).
 		Suffix("RETURNING id")
 
-	sql, args, err := query.ToSql()
+	sqlCmd, args, err := query.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "failed to build sql query")
 	}
 
-	err = rp.db.SqlDB.QueryRowContext(ctx, sql, args...).Scan(&card.ID)
+	err = rp.db.SqlDB.QueryRowContext(ctx, sqlCmd, args...).Scan(&card.ID)
 	if err != nil {
 		return errors.Wrap(err, "failed to insert card")
+	}
+
+	// also add fsrs data
+	err = rp.AddFsrs(ctx, &card.FsrsData, card.ID)
+	if err != nil {
+		return errors.Wrapf(err, "failed to insert fsrs data to database of card id = %v", card.ID)
 	}
 
 	return nil
@@ -44,12 +52,12 @@ func (rp *practiceRepo) GetCard(ctx context.Context, cardID uint64) (*langfi.Rev
 		From("cards").
 		Where("id = ?", cardID)
 
-	sql, args, err := query.ToSql()
+	sqlCmd, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build sql query")
 	}
 
-	row := rp.db.SqlDB.QueryRowContext(ctx, sql, args...)
+	row := rp.db.SqlDB.QueryRowContext(ctx, sqlCmd, args...)
 	card := langfi.ReviewCard{}
 	var properties string
 	err = row.Scan(&card.ID, &card.Front, &card.Back, &properties, &card.Status)
@@ -78,12 +86,12 @@ func (rp *practiceRepo) UpdateCard(ctx context.Context, card *langfi.ReviewCard)
 		Set("properties", card.PropertiesToJson()).
 		Set("status", card.Status)
 
-	sql, args, err := query.ToSql()
+	sqlCmd, args, err := query.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "failed to build sql query")
 	}
 
-	_, err = rp.db.SqlDB.ExecContext(ctx, sql, args...)
+	_, err = rp.db.SqlDB.ExecContext(ctx, sqlCmd, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to update card")
 	}
@@ -99,7 +107,7 @@ func (rp *practiceRepo) UpdateCard(ctx context.Context, card *langfi.ReviewCard)
 }
 
 func (rp *practiceRepo) FetchReviewCard(ctx context.Context, groupID string) (*langfi.ReviewCard, error) {
-	query := rp.db.QueryBuilder.Select("id", "front", "back", "properties", "status").
+	query := rp.db.QueryBuilder.Select("cards.id", "cards.front", "cards.back", "cards.properties", "cards.status").
 		From("cards").
 		Join("fsrs ON cards.id = fsrs.card_id").
 		GroupBy("cards.id", "fsrs.card_id").
@@ -107,12 +115,12 @@ func (rp *practiceRepo) FetchReviewCard(ctx context.Context, groupID string) (*l
 		OrderBy("fsrs.due").
 		Limit(1)
 
-	sql, args, err := query.ToSql()
+	sqlCmd, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build sql query")
 	}
 
-	row := rp.db.SqlDB.QueryRowContext(ctx, sql, args...)
+	row := rp.db.SqlDB.QueryRowContext(ctx, sqlCmd, args...)
 	card := langfi.ReviewCard{}
 	var properties string
 	err = row.Scan(&card.ID, &card.Front, &card.Back, &properties, &card.Status)
@@ -139,16 +147,19 @@ func (rp *practiceRepo) FetchUnProcessCard(ctx context.Context, groupID string) 
 		OrderBy("created_at").
 		Limit(1)
 
-	sql, args, err := query.ToSql()
+	sqlCmd, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build sql query")
 	}
 
-	row := rp.db.SqlDB.QueryRowContext(ctx, sql, args...)
+	row := rp.db.SqlDB.QueryRowContext(ctx, sqlCmd, args...)
 	var card langfi.ReviewCard
 	var properties string
 	err = row.Scan(&card.ID, &card.Front, &card.Back, &properties, &card.Status)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, model.ErrNoMoreDataAvailable
+		}
 		return nil, errors.Wrap(err, "failed to scan card")
 	}
 	card.SetPropertiesFromJson(properties)
