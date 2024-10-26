@@ -2,9 +2,9 @@
 import { toBase58 } from "util/base58";
 import { useState, Fragment } from "react";
 import { Cog6ToothIcon, ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
-import { Title } from "@components/title";
+import { Title } from "components/title";
 import { encrypt } from "pkg/encryption";
-import { ErrorMessage } from "@components/error";
+import { ErrorMessage } from "components/error";
 import { encodeCompositeKey } from "pkg/encoding";
 import { LATEST_KEY_VERSION } from "pkg/constants";
 

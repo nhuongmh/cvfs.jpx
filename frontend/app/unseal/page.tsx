@@ -2,12 +2,12 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 
-import { Title } from "@components/title";
+import { Title } from "components/title";
 
 import { decodeCompositeKey } from "pkg/encoding";
 import { decrypt } from "pkg/encryption";
 import Link from "next/link";
-import { ErrorMessage } from "@components/error";
+import { ErrorMessage } from "components/error";
 
 export default function Unseal() {
   const [compositeKey, setCompositeKey] = useState<string>("");

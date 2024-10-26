@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {  FaCheck, FaTimes, FaArchive, FaEdit } from "react-icons/fa";
+import { FaCheck, FaTimes, FaArchive, FaEdit } from "react-icons/fa";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Input } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "models/card";
@@ -94,12 +94,16 @@ const ProposalCheck: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="bg-gray-50 p-6 rounded-lg shadow-sm mb-6"
+                className="p-6 rounded-lg shadow-sm mb-6"
               >
-                <h2 className="text-2xl font-bold mb-4">Front:</h2>
-                <p className="text-3xl text-gray-800">{currentCard.front}</p>
-                <h2 className="text-2xl font-bold mb-4">Back:</h2>
-                <p className="text-3xl text-gray-800">{currentCard.back}</p>
+                <div className="pb-11">
+                  <h2 className="text-2xl font-bold mb-4 text-fuchsia-700">Front:</h2>
+                  <p className="text-3xl">{currentCard.front}</p>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-4 text-violet-700">Back:</h2>
+                  <p className="text-3xl">{currentCard.back}</p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

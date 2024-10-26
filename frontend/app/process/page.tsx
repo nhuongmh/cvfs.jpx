@@ -1,8 +1,6 @@
 "use client";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
-import Link from "next/link";
 import ProposalCheck from "./review";
-import { Title } from "@components/title";
+import { Title } from "components/title";
 import React from "react";
 
 export default function Process() {

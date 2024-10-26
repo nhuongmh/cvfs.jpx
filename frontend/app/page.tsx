@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Stats } from "./components/stats";
+import { Stats } from "../components/stats";
 
 export default function Home() {
   return (
@@ -27,7 +27,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <Stats />
     </div>
   );
 }
