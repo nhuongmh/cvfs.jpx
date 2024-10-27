@@ -5,29 +5,18 @@ export const siteConfig = {
     description: "langfi: Accelerate your language learning",
     navItems: [
         {
-            label: "Home",
-            href: "/",
+            name: "Stat",
+            href: "/stat",
         },
         {
-            label: "Docs",
-            href: "/docs",
-        },
-        {
-            label: "Blog",
-            href: "/blog",
-        },
-        {
-            label: "Stat",
-            href: "/share",
-        },
-        {
-            label: "JPX",
-            href: "/unseal",
+            name: "Process",
+            href: "/process",
         },
 
         {
-            label: "Eng",
-            href: "/deploy",
+            name: "Learn",
+            href: "/learn",
+            external: false,
         },
     ],
     navMenuItems: [
@@ -65,11 +54,9 @@ export const siteConfig = {
         },
     ],
     links: {
-        github: "https://github.com/nextui-org/nextui",
-        twitter: "https://twitter.com/getnextui",
+        github: "https://github.com/nhuongmh/cvfs.jpx",
         docs: "https://nextui.org",
-        discord: "https://discord.gg/9b6yyZKmH4",
-        sponsor: "https://patreon.com/jrgarciadev",
+        googlechat: "https://chat.google.com/room/AAAA-JatYZI?cls=7",
     },
     server_url_prefix: `http://${process.env.NEXT_PUBLIC_SERVER_URL}/public/api/v1`,
 };

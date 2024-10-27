@@ -130,6 +130,7 @@ const CardLearn: React.FC = () => {
                     {currentCard && (
                         <div className="mt-4">
                             <p className="text-lg">Due Review: <span className="text-xl">{new Date(currentCard.FsrsData.Due).toLocaleString()}</span></p>
+                            <p className="text-lg">Last Review: <span className="text-xl">{new Date(currentCard.FsrsData.LastReview).toLocaleString()}</span></p>
                         </div>
                     )}
 

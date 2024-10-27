@@ -5,3 +5,7 @@
 - https://developers.google.com/sheets/api/quickstart/go
 - https://console.cloud.google.com/apis/dashboard?project=cvfs-jpx
 Remember to share the spreadsheet with service account email
+
+
+## Unit Test
+go test -v -run TestMaziiFetcher_FetchMaziiKanji github.com/nhuongmh/cfvs.jpx/pkg/supporter/mazii

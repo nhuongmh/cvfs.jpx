@@ -2,27 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const navigation = [
-  {
-    name: "Stat",
-    href: "/share",
-  },
-  {
-    name: "JPX",
-    href: "/unseal",
-  },
-
-  {
-    name: "Eng",
-    href: "/deploy",
-  },
-  {
-    name: "GitHub",
-    href: "https://github.com/chronark/envshare",
-    external: true,
-  },
-] satisfies { name: string; href: string; external?: boolean }[];
+import { siteConfig } from "@/config/site";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -36,7 +16,7 @@ export const Header: React.FC = () => {
           {/* Desktop navigation */}
           <nav className="flex items-center grow">
             <ul className="flex flex-wrap items-center justify-end gap-4 grow">
-              {navigation.map((item) => (
+              {siteConfig.navItems.map((item) => (
                 <li className="" key={item.href}>
                   <Link
                     className={`flex items-center px-3 py-2 duration-150 text-sm sm:text-base  hover:text-zinc-50
