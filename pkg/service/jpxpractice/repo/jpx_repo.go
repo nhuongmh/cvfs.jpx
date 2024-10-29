@@ -78,6 +78,48 @@ func (rp *practiceRepo) GetCard(ctx context.Context, cardID uint64) (*langfi.Rev
 	return &card, nil
 }
 
+func (rp *practiceRepo) GetCardByFront(ctx context.Context, front string) (*[]langfi.ReviewCard, error) {
+	query := rp.db.QueryBuilder.Select("id", "front", "back", "properties", "status").
+		From("cards").
+		Where("front = ?", front)
+
+	sqlCmd, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build sql query")
+	}
+
+	rows, err := rp.db.SqlDB.QueryContext(ctx, sqlCmd, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to query SQL")
+	}
+	defer rows.Close()
+	cards := []langfi.ReviewCard{}
+	for rows.Next() {
+		var card langfi.ReviewCard
+		var properties string
+		if err := rows.Scan(&card.ID, &card.Front, &card.Back, &properties, &card.Status); err != nil {
+			return &cards, errors.Wrap(err, "failed to scan SQL")
+		}
+		card.SetPropertiesFromJson(properties)
+
+		// get fsrs data
+		fsrsData, err := rp.GetFsrs(ctx, card.ID)
+		if err != nil {
+			logger.Log.Error().Err(err).Msgf("failed to get fsrs data of card id = %v", card.ID)
+			card.FsrsData = langfi.FSRSData{Card: fsrs.NewCard()}
+		} else {
+			card.FsrsData = *fsrsData
+		}
+
+		cards = append(cards, card)
+	}
+	if err = rows.Err(); err != nil {
+		return &cards, errors.Wrap(err, "failed to scan SQL")
+	}
+
+	return &cards, nil
+}
+
 func (rp *practiceRepo) UpdateCard(ctx context.Context, card *langfi.ReviewCard) error {
 	query := rp.db.QueryBuilder.Update("cards").
 		Where("id = ?", card.ID).

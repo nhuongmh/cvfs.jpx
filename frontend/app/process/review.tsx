@@ -104,6 +104,17 @@ const ProposalCheck: React.FC = () => {
                   <h2 className="text-2xl font-bold mb-4 text-violet-700">Back:</h2>
                   <p className="text-3xl">{currentCard.back}</p>
                 </div>
+                {/* display cards properties */}
+                <div>
+                  <h2 className="text-2xl font-bold mb-4 text-indigo-700">Properties:</h2>
+                  <ul>
+                    {Object.entries(currentCard.properties).map(([key, value]) => (
+                      <li key={key} className="mb-2">
+                        <strong>{key}:</strong> {value}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

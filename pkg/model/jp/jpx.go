@@ -2,16 +2,19 @@ package jp
 
 import (
 	"context"
+	"fmt"
+	"regexp"
 
 	"github.com/nhuongmh/cfvs.jpx/pkg/model"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model/langfi"
 )
 
 const (
-	KANA     = "kana"
-	MEANING  = "meaning"
-	HAN_VIE  = "han_viet"
-	CATEGORY = "category"
+	KANA            = "kana"
+	MEANING         = "meaning"
+	HAN_VIE         = "han_viet"
+	CATEGORY        = "category"
+	MARKED_TO_LEARN = "marked_to_learn"
 )
 
 // card state
@@ -31,6 +34,27 @@ type SentenceFormula struct {
 	Form        string `json:"form"`
 	Description string `json:"description"`
 	Backward    string `json:"backward"`
+}
+
+func (s *SentenceFormula) IsValid() error {
+	//get all vars in Form
+	sentenceVarRegex := regexp.MustCompile(`\[(\w+)\]`)
+	formVars := sentenceVarRegex.FindAllStringSubmatch(s.Form, -1)
+	backVars := sentenceVarRegex.FindAllStringSubmatch(s.Backward, -1)
+
+	//all vars in backward must available in form
+	fVarsMap := map[string]bool{}
+	for _, fvar := range formVars {
+		fVarsMap[fvar[1]] = true
+	}
+	for _, bvar := range backVars {
+		sfVar := bvar[1]
+		if _, ok := fVarsMap[sfVar]; !ok {
+			return fmt.Errorf("var [%v] found in backward but not found in form", sfVar)
+		}
+	}
+	return nil
+
 }
 
 // type CardProposal struct {

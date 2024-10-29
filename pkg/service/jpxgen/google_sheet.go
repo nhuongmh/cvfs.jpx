@@ -15,6 +15,24 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
+const (
+	GOI_ID_COLUMN       = 0
+	GOI_LESSON_COLUMN   = 1
+	GOI_ORIGINAL_COLUMN = 2
+	GOI_KANA_COLUMN     = 3
+	GOI_HANVIE_COLUMN   = 4
+	GOI_MEANING_COLUMN  = 5
+	GOI_CATEGORY_COLUMN = 6
+	GOI_TOLEARN_COLUMN  = 7
+)
+
+const (
+	FORM_MINNA_ID_COLUMN    = 0
+	FORM_FORMULA_COLUMN     = 1
+	FORM_BACKWARD_COLUMN    = 2
+	FORM_DESCRIPTION_COLUMN = 3
+)
+
 type ggSheetDatasource struct {
 	SheetSrv *sheets.Service
 }
@@ -69,16 +87,19 @@ func (ggs *ggSheetDatasource) fetchWords(spreadsheetId, sheetName string) (*[]jp
 		if len(row) < 7 {
 			continue
 		}
-		word := row[3].(string)
+		word := row[GOI_ORIGINAL_COLUMN].(string)
 		if word == "" {
-			word = row[2].(string)
+			word = row[GOI_KANA_COLUMN].(string)
 		}
 
 		w := jp.NewWord(word)
-		w.SetProp(jp.KANA, row[2].(string))
-		w.SetProp(jp.HAN_VIE, row[4].(string))
-		w.SetProp(jp.MEANING, row[5].(string))
-		w.Category = row[6].(string)
+		w.SetProp(jp.KANA, row[GOI_KANA_COLUMN].(string))
+		w.SetProp(jp.HAN_VIE, row[GOI_HANVIE_COLUMN].(string))
+		w.SetProp(jp.MEANING, row[GOI_MEANING_COLUMN].(string))
+		if len(row) > GOI_TOLEARN_COLUMN {
+			w.SetProp(jp.MARKED_TO_LEARN, row[GOI_TOLEARN_COLUMN].(string))
+		}
+		w.Category = row[GOI_CATEGORY_COLUMN].(string)
 
 		wordList = append(wordList, w)
 	}
@@ -105,10 +126,10 @@ func (ggs *ggSheetDatasource) fetchFormulas(spreadsheetId, sheetName string) (*[
 		if len(row) < 4 {
 			continue
 		}
-		minnaStr := row[0].(string)
-		form := row[1].(string)
-		backward := row[2].(string)
-		description := row[3].(string)
+		minnaStr := row[FORM_MINNA_ID_COLUMN].(string)
+		form := row[FORM_FORMULA_COLUMN].(string)
+		backward := row[FORM_BACKWARD_COLUMN].(string)
+		description := row[FORM_DESCRIPTION_COLUMN].(string)
 
 		minna, err := strconv.ParseInt(minnaStr, 0, 32)
 		if err != nil {

@@ -94,8 +94,18 @@ const CardLearn: React.FC = () => {
                                 </div>
                                 {isShowBack && (
                                     <div>
-                                        <h2 className="text-2xl font-bold mb-4 text-violet-700">Answer:</h2>
-                                        <p className="text-4xl">{currentCard.back}</p>
+                                        <div>
+                                            <h2 className="text-2xl font-bold mb-4 text-violet-700">Answer:</h2>
+                                            <p className="text-4xl">{currentCard.back}</p>
+                                            <h2 className="text-2xl font-bold mb-4 text-indigo-700">Properties:</h2>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(currentCard.properties).map(([key, value]) => (
+                                                    <li key={key}>
+                                                        <strong>{key}:</strong> {value}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     </div>
                                 )}
                             </motion.div>

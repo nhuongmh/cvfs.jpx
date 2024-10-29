@@ -6,9 +6,30 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
 	"github.com/pkg/errors"
 )
 
+// 東京大学 -> extract each Kanji -> fetch -> ĐÔNG KINH ĐẠI HỌC
+func (m *MaziiFetcher) SearchAndFetchKanji(str string) (string, *[]KanjiResultResp, error) {
+	var kanjiResults []KanjiResultResp
+	var result string
+	for _, c := range str {
+		//kanji is word has unicode u4e00 -> \u9faf
+		if c < 0x4e00 || c > 0x9faf {
+			continue
+		}
+		kanji, err := m.FetchMaziiKanji(string(c))
+		if err != nil {
+			logger.Log.Warn().Err(err).Msgf("failed to fetch kanji %v", c)
+		}
+		if len(kanji.Results) > 0 {
+			kanjiResults = append(kanjiResults, *kanji)
+			result += fmt.Sprintf("%v ", kanji.Results[0].Meaning)
+		}
+	}
+	return result, &kanjiResults, nil
+}
 func (m *MaziiFetcher) FetchMaziiKanji(kj string) (*KanjiResultResp, error) {
 	// Prepare the request data
 	requestPayload := map[string]interface{}{
