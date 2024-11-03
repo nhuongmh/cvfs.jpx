@@ -211,3 +211,17 @@ func (rp *practiceRepo) FetchUnProcessCard(ctx context.Context, groupID string) 
 
 	return &card, nil
 }
+
+func (rp *practiceRepo) DeleteNewCard(ctx context.Context) error {
+	query := rp.db.QueryBuilder.Delete("cards").Where("status = ?", langfi.CARD_NEW)
+
+	sqlCmd, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "failed to build sql query")
+	}
+	_, err = rp.db.SqlDB.ExecContext(ctx, sqlCmd, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete NEW card")
+	}
+	return nil
+}

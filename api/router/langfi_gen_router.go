@@ -17,6 +17,7 @@ func NewJpxServiceRouter(app *bootstrap.Application, repo langfi.PracticeRepo, t
 
 	privateRouter.PUT(DEFAULT_API_PREFIX+"/core/initdb", tc.InitData)
 	privateRouter.PUT(DEFAULT_API_PREFIX+"/core/buildcards", tc.GenerateProposalCards)
+	privateRouter.DELETE(DEFAULT_API_PREFIX+"/core/deletenew", tc.DeleteAllNewCard)
 	publicRouter.GET(DEFAULT_API_PREFIX+"/core/langs", tc.GetAvailableLang)
 	publicRouter.GET(DEFAULT_API_PREFIX+"/process/:lang-id/fetch", tc.FetchProposal)
 	publicRouter.POST(DEFAULT_API_PREFIX+"/process/:lang-id/submit", tc.SubmitProposal)

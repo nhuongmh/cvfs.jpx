@@ -26,9 +26,10 @@ type jpxService struct {
 	env            *bootstrap.Env
 	ggService      *ggSheetDatasource
 	wordList       *[]jp.Word
+	formulaList    *[]jp.SentenceFormula
 }
 
-var SENTENCE_VAR_REGEX = regexp.MustCompile(`\[(\w+)\]`)
+var SENTENCE_VAR_REGEX = regexp.MustCompile(jp.FORM_VAR_REGEX)
 
 func NewJpxService(repo langfi.PracticeRepo, timeout time.Duration, env *bootstrap.Env) jp.JpxGeneratorService {
 	jps := &jpxService{
@@ -49,7 +50,13 @@ func (jps *jpxService) InitData(ctx context.Context) error {
 		return errors.Wrap(err, "init google service failed")
 	}
 	logger.Log.Info().Msg("init google service success, now trying to fetch data")
-	wordList, err := ggService.fetchWords(jps.env.GoogleSpreadSheetId, jps.env.GoogleWordSheetName)
+
+	jps.ggService = ggService
+	return nil
+}
+
+func (jps *jpxService) SyncGoogleSheet(ctx context.Context) error {
+	wordList, err := jps.ggService.fetchWords(jps.env.GoogleSpreadSheetId, jps.env.GoogleWordSheetName)
 	if err != nil {
 		return errors.Wrap(err, "fetching data from google sheet failed")
 	}
@@ -58,19 +65,25 @@ func (jps *jpxService) InitData(ctx context.Context) error {
 		return errors.New("no data fetched from google sheet")
 	}
 
-	jps.ggService = ggService
 	jps.wordList = wordList
-	logger.Log.Info().Msg("tried fetching data success")
+	logger.Log.Info().Msgf("fetched %v words from google sheet %v", len(*jps.wordList), jps.env.GoogleSpreadSheetId)
+
+	formulas, err := jps.ggService.fetchFormulas(jps.env.GoogleSpreadSheetId, jps.env.GoogleFormulaSheetName)
+	if err != nil {
+		return errors.Wrap(err, "failed init sentence formula")
+	}
+	jps.formulaList = formulas
+	logger.Log.Info().Msgf("fetched %v formula from google sheet %v", len(*jps.formulaList), jps.env.GoogleSpreadSheetId)
 
 	return nil
 }
 
-func (jps *jpxService) SyncWordList(ctx context.Context) error {
-	return model.ErrNotImplemented
-}
-
 func (jps *jpxService) GetWordList(ctx context.Context) *[]jp.Word {
 	return jps.wordList
+}
+
+func (jps *jpxService) DeleteNewCards(ctx context.Context) error {
+	return jps.repo.DeleteNewCard(ctx)
 }
 
 // using google service to build cards based on words and setences formula from google sheet
@@ -79,32 +92,26 @@ func (jps *jpxService) BuildCards(ctx context.Context) (*[]langfi.ReviewCard, er
 		return nil, model.ErrServiceIsNotInitialized
 	}
 
-	proposalList := []langfi.ReviewCard{}
-
-	sentenceCards, err := jps.buildSentenceCards()
+	err := jps.SyncGoogleSheet(ctx)
 	if err != nil {
-		logger.Log.Warn().Err(err).Msg("failed to build sentence cards")
-	} else {
-		proposalList = append(proposalList, *sentenceCards...)
+		return nil, errors.Wrap(err, "sync data from google sheet failed")
 	}
 
-	wordCards, err := jps.buildWordCards()
+	proposalList, err := jps.genMinnaCards()
 	if err != nil {
-		logger.Log.Warn().Err(err).Msg("failed to build word cards")
-	} else {
-		proposalList = append(proposalList, *wordCards...)
+		return nil, errors.Wrap(err, "build cards failed")
 	}
 
-	if len(proposalList) == 0 {
+	if len(*proposalList) == 0 {
 		return nil, errors.Wrap(model.ErrNoData, "No proposal card generated")
 	} else {
-		logger.Log.Info().Msgf("Successfully built %v cards", len(proposalList))
+		logger.Log.Info().Msgf("Successfully built %v cards", len(*proposalList))
 	}
 
 	// check if card exist -> if not, insert to db
 
-	for i := range proposalList {
-		card := proposalList[i]
+	for i := range *proposalList {
+		card := (*proposalList)[i]
 		existed, err := jps.repo.GetCardByFront(ctx, card.Front)
 		if err != nil || len(*existed) == 0 {
 			logger.Log.Info().Msgf("card %v not exist, trying to insert", card.Front)
@@ -117,21 +124,58 @@ func (jps *jpxService) BuildCards(ctx context.Context) (*[]langfi.ReviewCard, er
 		}
 	}
 
+	return proposalList, nil
+}
+
+func (jps *jpxService) genMinnaCards() (*[]langfi.ReviewCard, error) {
+	//fetch words -> gen words card -> get formula by word's lessons -> gen sentence cards
+	// gen word without lesson
+	// gen sentence for formula that not associate with any lesson
+	proposalList := []langfi.ReviewCard{}
+	minnaList := jps.getMinnaList()
+	logger.Log.Debug().Msgf("Minna lesson list: %v", minnaList)
+	for _, minna := range minnaList {
+		wordCards, err := jps.buildWordCards(minna)
+		if err != nil {
+			logger.Log.Warn().Err(err).Msg("failed to build word cards")
+		} else {
+			proposalList = append(proposalList, *wordCards...)
+		}
+		sentences, err := jps.buildSentenceCards(minna)
+		if err != nil {
+			logger.Log.Warn().Err(err).Msg("failed to build sentence cards")
+		} else {
+			proposalList = append(proposalList, *sentences...)
+		}
+	}
+
+	//build cards without minna
+	wordCards, err := jps.buildWordCards("")
+	if err != nil {
+		logger.Log.Warn().Err(err).Msg("failed to build word cards")
+	} else {
+		proposalList = append(proposalList, *wordCards...)
+	}
+	sentences, err := jps.buildSentenceCards("")
+	if err != nil {
+		logger.Log.Warn().Err(err).Msg("failed to build sentence cards")
+	} else {
+		proposalList = append(proposalList, *sentences...)
+	}
+
 	return &proposalList, nil
 }
 
-func (jps *jpxService) buildSentenceCards() (*[]langfi.ReviewCard, error) {
-	formulas, err := jps.ggService.fetchFormulas(jps.env.GoogleSpreadSheetId, jps.env.GoogleFormulaSheetName)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed init sentence formula")
-	}
+func (jps *jpxService) buildSentenceCards(minna string) (*[]langfi.ReviewCard, error) {
 
 	proposalList := []langfi.ReviewCard{}
-
-	sentenceVarRegex := regexp.MustCompile(`\[(\w+)\]`)
-	for i := range *formulas {
+	sentenceVarRegex := regexp.MustCompile(jp.FORM_VAR_REGEX)
+	for i := range *jps.formulaList {
+		if (*jps.formulaList)[i].Minna != minna {
+			continue
+		}
 		for c := 0; c < MOST_CARD_PER_FORMULA; c++ {
-			formula := (*formulas)[i]
+			formula := (*jps.formulaList)[i]
 			sentence := formula.Form
 			meaning := formula.Backward
 
@@ -149,16 +193,22 @@ func (jps *jpxService) buildSentenceCards() (*[]langfi.ReviewCard, error) {
 			buildSuccess := true
 			collectiveProps := map[string]interface{}{}
 			for _, svar := range sentenceVars {
-				rvar := svar[1]
-				w, err := jps.randomWordFromCategory(rvar)
+				rvar := svar[1] //raw sentence var
+				prsvar := rvar  //to process raw sentence var
+				// var can contains id like [Job_1]
+				if strings.Contains(prsvar, "@") {
+					rvarSplit := strings.Split(prsvar, "@")
+					prsvar = rvarSplit[0]
+				}
+				w, err := jps.randomWordFromCategory(prsvar)
 				if err != nil {
-					logger.Log.Warn().Msgf("formula: %v => error not found any word for category %v: %v", formula, rvar, err)
+					logger.Log.Warn().Msgf("formula: %v => error not found any word for category %v: %v", formula, prsvar, err)
 					buildSuccess = false
 					break
 				}
 				logger.Log.Debug().Msgf("replacing %v , [%v] with %v", sentence, rvar, w.Name)
 				sentence = strings.Replace(sentence, fmt.Sprintf("[%v]", rvar), w.Name, 1)
-				meaning = strings.Replace(meaning, fmt.Sprintf("[%v]", rvar), w.GetMeaning(), 1)
+				meaning = strings.Replace(meaning, fmt.Sprintf("[%v]", rvar), w.GetMeaning(), -1)
 				for k, v := range w.Properties {
 					collectiveProps[k] = v
 				}
@@ -175,11 +225,14 @@ func (jps *jpxService) buildSentenceCards() (*[]langfi.ReviewCard, error) {
 	return &proposalList, nil
 }
 
-func (jps *jpxService) buildWordCards() (*[]langfi.ReviewCard, error) {
+func (jps *jpxService) buildWordCards(minna string) (*[]langfi.ReviewCard, error) {
 	proposalList := []langfi.ReviewCard{}
 
 	for i := range *jps.wordList {
 		word := (*jps.wordList)[i]
+		if minna != word.GetPropOrEmpty(jp.MINNA) {
+			continue
+		}
 		if tolearn, ok := word.Properties[jp.MARKED_TO_LEARN]; !ok || tolearn == "" {
 			continue
 		}
@@ -234,8 +287,26 @@ func (jps *jpxService) randomWordFromCategory(cat string) (*jp.Word, error) {
 	return jps.processWord(word)
 }
 
+func (jps *jpxService) getMinnaList() []string {
+	minnaMap := map[string]bool{}
+	for i := range *jps.wordList {
+		w := (*jps.wordList)[i]
+		minna := w.GetPropOrEmpty(jp.MINNA)
+		if minna != "" {
+			minnaMap[minna] = true
+		}
+	}
+
+	minnas := make([]string, 0, len(minnaMap))
+
+	for key, _ := range minnaMap {
+		minnas = append(minnas, key)
+	}
+	return minnas
+}
+
 func (jps *jpxService) checkInitialized() bool {
-	return jps.ggService != nil && jps.wordList != nil
+	return jps.ggService != nil
 }
 
 func (jps *jpxService) FetchProposal(ctx context.Context) (*langfi.ReviewCard, error) {

@@ -14,7 +14,9 @@ const (
 	MEANING         = "meaning"
 	HAN_VIE         = "han_viet"
 	CATEGORY        = "category"
+	MINNA           = "minna"
 	MARKED_TO_LEARN = "marked_to_learn"
+	FORM_VAR_REGEX  = `\[([a-zA-Z_]+[@]?[1-9]?)\]`
 )
 
 // card state
@@ -30,7 +32,7 @@ type Word struct {
 }
 
 type SentenceFormula struct {
-	Minna       int    `json:"minna"`
+	Minna       string `json:"minna"`
 	Form        string `json:"form"`
 	Description string `json:"description"`
 	Backward    string `json:"backward"`
@@ -38,7 +40,7 @@ type SentenceFormula struct {
 
 func (s *SentenceFormula) IsValid() error {
 	//get all vars in Form
-	sentenceVarRegex := regexp.MustCompile(`\[(\w+)\]`)
+	sentenceVarRegex := regexp.MustCompile(FORM_VAR_REGEX)
 	formVars := sentenceVarRegex.FindAllStringSubmatch(s.Form, -1)
 	backVars := sentenceVarRegex.FindAllStringSubmatch(s.Backward, -1)
 
@@ -79,14 +81,14 @@ func (w *Word) SetProp(key, value string) {
 }
 
 func (w *Word) GetKana() string {
-	return w.getPropOrEmpty(KANA)
+	return w.GetPropOrEmpty(KANA)
 }
 
 func (w *Word) GetMeaning() string {
-	return w.getPropOrEmpty(MEANING)
+	return w.GetPropOrEmpty(MEANING)
 }
 
-func (w *Word) getPropOrEmpty(key string) string {
+func (w *Word) GetPropOrEmpty(key string) string {
 	if value, ok := w.Properties[key]; ok {
 		return value
 	}
@@ -95,7 +97,7 @@ func (w *Word) getPropOrEmpty(key string) string {
 
 type JpxGeneratorService interface {
 	InitData(ctx context.Context) error
-	SyncWordList(ctx context.Context) error
+	DeleteNewCards(ctx context.Context) error
 	GetWordList(ctx context.Context) *[]Word
 	BuildCards(ctx context.Context) (*[]langfi.ReviewCard, error)
 	FetchProposal(ctx context.Context) (*langfi.ReviewCard, error)

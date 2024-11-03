@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"strconv"
 
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model"
@@ -93,6 +92,7 @@ func (ggs *ggSheetDatasource) fetchWords(spreadsheetId, sheetName string) (*[]jp
 		}
 
 		w := jp.NewWord(word)
+		w.SetProp(jp.MINNA, row[GOI_LESSON_COLUMN].(string))
 		w.SetProp(jp.KANA, row[GOI_KANA_COLUMN].(string))
 		w.SetProp(jp.HAN_VIE, row[GOI_HANVIE_COLUMN].(string))
 		w.SetProp(jp.MEANING, row[GOI_MEANING_COLUMN].(string))
@@ -131,14 +131,8 @@ func (ggs *ggSheetDatasource) fetchFormulas(spreadsheetId, sheetName string) (*[
 		backward := row[FORM_BACKWARD_COLUMN].(string)
 		description := row[FORM_DESCRIPTION_COLUMN].(string)
 
-		minna, err := strconv.ParseInt(minnaStr, 0, 32)
-		if err != nil {
-			logger.Log.Warn().Msgf("parse minna lesson wrong with minna: %v", minnaStr)
-			minna = 0
-		}
-
 		formula := jp.SentenceFormula{
-			Minna:       int(minna),
+			Minna:       minnaStr,
 			Form:        form,
 			Description: description,
 			Backward:    backward,

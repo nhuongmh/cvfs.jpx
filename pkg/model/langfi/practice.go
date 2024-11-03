@@ -84,4 +84,5 @@ type PracticeRepo interface {
 	FetchReviewCard(ctx context.Context, groupID string) (*ReviewCard, error)
 	GetCardByFront(ctx context.Context, front string) (*[]ReviewCard, error)
 	FetchUnProcessCard(ctx context.Context, groupID string) (*ReviewCard, error)
+	DeleteNewCard(ctx context.Context) error
 }
