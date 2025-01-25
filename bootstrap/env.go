@@ -17,6 +17,7 @@ type Env struct {
 	ServerAddress          string `mapstructure:"SERVER_ADDRESS"`
 	SqliteDBUrl            string `mapstructure:"SQLITE_DB_URL"`
 	GoogleKeyBase64        string `mapstructure:"GOOGLE_API_KEY_BASE64"`
+	GoogleAIKey            string `mapstructure:"GOOGLE_AI_KEY"`
 	GoogleSpreadSheetId    string `mapstructure:"GOOGLE_SPREADSHEET_ID"`
 	GoogleWordSheetName    string `mapstructure:"GOOGLE_WORD_SHEET_NAME"`
 	GoogleFormulaSheetName string `mapstructure:"GOOGLE_FORMULA_SHEET_NAME"`

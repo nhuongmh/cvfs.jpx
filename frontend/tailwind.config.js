@@ -1,3 +1,4 @@
+const {heroui} = require('@heroui/theme');
 const {nextui} = require('@nextui-org/theme');
 const defaultTheme = require("tailwindcss/defaultTheme");
 
@@ -7,7 +8,8 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@heroui/theme/dist/components/(table|checkbox|form|spacer).js"
   ],
   theme: {
     fontFamily: {
@@ -21,5 +23,5 @@ module.exports = {
     },
   },
   darkMode: "class",
-  plugins: [require("@tailwindcss/forms"),nextui()],
+  plugins: [require("@tailwindcss/forms"),nextui(),heroui()],
 };

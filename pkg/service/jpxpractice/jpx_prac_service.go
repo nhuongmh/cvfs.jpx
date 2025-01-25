@@ -29,15 +29,19 @@ func (jps *jpxPracService) GetGroups(ctx context.Context) []string {
 	return []string{"jp"}
 }
 
-func (jps *jpxPracService) FetchCard(ctx context.Context, groupID string) (*langfi.ReviewCard, error) {
+func (jps *jpxPracService) FetchCard(ctx context.Context, group string) (*langfi.ReviewCard, error) {
 	// get card from repo
-	card, err := jps.repo.FetchReviewCard(ctx, groupID)
+	card, err := jps.repo.FetchReviewCard(ctx, group)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get card")
 	}
 
 	return card, nil
 
+}
+
+func (jps *jpxPracService) GetGroupStats(ctx context.Context) (*[]langfi.GroupSummaryDto, error) {
+	return jps.repo.GetGroupStats(ctx)
 }
 
 func (jps *jpxPracService) SubmitCard(ctx context.Context, cardId uint64, rating uint64) error {

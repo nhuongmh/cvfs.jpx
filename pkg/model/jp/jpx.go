@@ -100,7 +100,7 @@ type JpxGeneratorService interface {
 	DeleteNewCards(ctx context.Context) error
 	GetWordList(ctx context.Context) *[]Word
 	BuildCards(ctx context.Context) (*[]langfi.ReviewCard, error)
-	FetchProposal(ctx context.Context) (*langfi.ReviewCard, error)
+	FetchProposal(ctx context.Context, group string) (*langfi.ReviewCard, error)
 	SubmitProposal(ctx context.Context, cardID uint64, status string) error
 	// GetProcessGroups(ctx context.Context) []string
 	EditCardText(ctx context.Context, newCard *langfi.ReviewCard) (*langfi.ReviewCard, error)

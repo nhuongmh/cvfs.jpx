@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/nhuongmh/cfvs.jpx/pkg/model/langfi"
 	"github.com/pkg/errors"
 )
@@ -32,7 +33,7 @@ func (rp *practiceRepo) GetFsrs(ctx context.Context, cardID uint64) (*langfi.FSR
 	query := rp.db.QueryBuilder.Select("id", "due", "stability", "difficulty", "elapsed_days", "scheduled_days",
 		"reps", "lapses", "state", "last_review").
 		From("fsrs").
-		Where("card_id = ?", cardID)
+		Where(sq.Eq{"card_id": cardID})
 
 	sql, args, err := query.ToSql()
 	if err != nil {

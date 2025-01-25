@@ -4,7 +4,7 @@
 - https://developers.google.com/identity/protocols/oauth2/service-account
 - https://developers.google.com/sheets/api/quickstart/go
 - https://console.cloud.google.com/apis/dashboard?project=cvfs-jpx
-Remember to share the spreadsheet with service account email
+Remember to share the spreadsheet with service account email (nhuongmh-jpx@cvfs-jpx.iam.gserviceaccount.com)
 
 
 ## Unit Test

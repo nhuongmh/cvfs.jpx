@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { MdCake, MdFlagCircle, MdHeartBroken, MdSnowboarding, MdOutlineRemoveRedEye  } from "react-icons/md";
+import { MdCake, MdFlagCircle, MdHeartBroken, MdSnowboarding, MdOutlineRemoveRedEye } from "react-icons/md";
 import { Button } from "@nextui-org/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "models/card";
 import { siteConfig } from "@/config/site";
+import { set } from "zod";
 
-const CardLearn: React.FC = () => {
-    const [selectedLang] = useState("jpx");
-    const [selectedGroup] = useState("minna");
+
+interface CardLearnProps {
+    lang?: string;
+    group: string;
+}
+
+const CardLearn: React.FC<CardLearnProps> = ({ lang = "jpx", group }) => {
     const [currentCard, setCurrentCard] = useState<Card | null>(null);
     const [error, setError] = useState<string>("");
     const [isShowBack, setIsShowBack] = useState<boolean>(false);
 
     const fetchCardFromServer = async () => {
         try {
-            const url = `${siteConfig.server_url_prefix}/practice/${selectedLang}/${selectedGroup}/fetch`
+            if (!group) {
+                setError("No group selected");
+                return;
+            };
+
+            const url = `${siteConfig.server_url_prefix}/practice/${lang}/${group}/fetch?group=${group}`;
             const response = await fetch(url);
             if (!response.ok) {
                 const repjson = await response.json();
@@ -33,7 +43,7 @@ const CardLearn: React.FC = () => {
         if (!currentCard) return;
         try {
             const rateNum = convertRating(rating);
-            const url = `${siteConfig.server_url_prefix}/practice/${selectedLang}/${selectedGroup}/submit?cardID=${currentCard.id}&rating=${rateNum}`;
+            const url = `${siteConfig.server_url_prefix}/practice/${lang}/${group}/submit?cardID=${currentCard.id}&rating=${rateNum}`;
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -47,7 +57,10 @@ const CardLearn: React.FC = () => {
         } catch (err: any) {
             setError("Failed to submit card status: " + err.message);
         } finally {
-            if (fetchNext) fetchCardFromServer();
+            if (fetchNext) {
+                fetchCardFromServer();
+                setIsShowBack(false);
+            } ;
         }
     };
 
@@ -77,6 +90,12 @@ const CardLearn: React.FC = () => {
 
     return (
         <div className="min-h-screen p-8">
+            {error && (
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                    <p className="font-bold">Error</p>
+                    <p>{error}</p>
+                </div>
+            )}
             <div className="max-w-4xl mx-auto rounded-xl shadow-md overflow-hidden">
                 <div className="p-8">
                     <AnimatePresence>
@@ -114,7 +133,7 @@ const CardLearn: React.FC = () => {
 
                     {!isShowBack && (
                         <Button onPress={() => toggleShowBack()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2">
-                            <MdOutlineRemoveRedEye  className="mr-2" /> Show Answer
+                            <MdOutlineRemoveRedEye className="mr-2" /> Show Answer
                         </Button>
                     )}
 
@@ -144,12 +163,6 @@ const CardLearn: React.FC = () => {
                         </div>
                     )}
 
-                    {error && (
-                        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                            <p className="font-bold">Error</p>
-                            <p>{error}</p>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

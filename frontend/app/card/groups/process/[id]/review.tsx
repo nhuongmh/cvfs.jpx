@@ -5,8 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "models/card";
 import { siteConfig } from "@/config/site";
 
-const ProposalCheck: React.FC = () => {
-  const [selectedLang, setSelectedLang] = useState("jpx");
+interface ProposalCheckProps {
+  lang?: string;
+  group: string;
+}
+
+const ProposalCheck: React.FC<ProposalCheckProps> = ({lang="jpx", group}) => {
   const [currentCard, setCurrentCard] = useState<Card | null>(null);
   const [currentCardEdit, setCurrentCardEdit] = useState<Card | null>(null);
   const [error, setError] = useState<string>("");
@@ -15,7 +19,11 @@ const ProposalCheck: React.FC = () => {
 
   const fetchCardFromServer = async () => {
     try {
-      const response = await fetch(`${siteConfig.server_url_prefix}/process/${selectedLang}/fetch`);
+      if (!group) {
+        setError("No group selected");
+        return;
+      };
+      const response = await fetch(`${siteConfig.server_url_prefix}/process/${lang}/fetch?group=${group}`);
       if (!response.ok) {
         const repjson = await response.json();
         throw new Error(`Server responded ${response.status}, ${repjson?.message}`);
@@ -32,7 +40,7 @@ const ProposalCheck: React.FC = () => {
   const submitCardStatus = async (status: string, fetchNext: boolean = true) => {
     if (!currentCard) return;
     try {
-      const url = `${siteConfig.server_url_prefix}/process/${selectedLang}/submit?cardID=${currentCard.id}&status=${status}`;
+      const url = `${siteConfig.server_url_prefix}/process/${lang}/submit?cardID=${currentCard.id}&status=${status}`;
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

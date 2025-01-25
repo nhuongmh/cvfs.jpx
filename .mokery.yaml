@@ -1,0 +1,10 @@
+with-expecter: true
+packages:
+    github.com/nhuongmh/cfvs.jpx:
+        # place your package-specific config here
+        config:
+        interfaces:
+            # select the interfaces you want mocked
+            PracticeRepo:
+                # Modify package-level config for this specific interface (if applicable)
+                config:

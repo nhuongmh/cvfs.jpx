@@ -30,6 +30,7 @@ type ReviewCard struct {
 	Back       string                 `json:"back"`
 	Properties map[string]interface{} `json:"properties"`
 	Status     string                 `json:"status"`
+	Group      string                 `json:"group"`
 }
 
 func NewReviewCard(front string, back string) ReviewCard {
@@ -69,20 +70,31 @@ func (c *ReviewCard) SetPropertiesFromJson(str string) {
 	}
 }
 
+type GroupSummaryDto struct {
+	Group    string `json:"group"`
+	NumCards int    `json:"num_cards"`
+	Proposal int    `json:"proposal"`
+	Learning int    `json:"learning"`
+	Discard  int    `json:"discard"`
+	Save     int    `json:"save"`
+}
+
 type PracticeService interface {
 	GetGroups(ctx context.Context) []string
 	FetchCard(ctx context.Context, group string) (*ReviewCard, error)
 	//newState should be Again=1, Hard=2, Good=3, Easy=4
 	SubmitCard(ctx context.Context, cardID, rating uint64) error
 	GetCard(ctx context.Context, cardId uint64) (*ReviewCard, error)
+	GetGroupStats(ctx context.Context) (*[]GroupSummaryDto, error)
 }
 
 type PracticeRepo interface {
 	AddCard(ctx context.Context, card *ReviewCard) error
 	GetCard(ctx context.Context, cardID uint64) (*ReviewCard, error)
 	UpdateCard(ctx context.Context, card *ReviewCard) error
-	FetchReviewCard(ctx context.Context, groupID string) (*ReviewCard, error)
+	FetchReviewCard(ctx context.Context, group string) (*ReviewCard, error)
 	GetCardByFront(ctx context.Context, front string) (*[]ReviewCard, error)
-	FetchUnProcessCard(ctx context.Context, groupID string) (*ReviewCard, error)
+	FetchUnProcessCard(ctx context.Context, group string) (*ReviewCard, error)
 	DeleteNewCard(ctx context.Context) error
+	GetGroupStats(ctx context.Context) (*[]GroupSummaryDto, error)
 }

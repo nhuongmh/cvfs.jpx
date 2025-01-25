@@ -135,12 +135,12 @@ func (jps *jpxService) genMinnaCards() (*[]langfi.ReviewCard, error) {
 	minnaList := jps.getMinnaList()
 	logger.Log.Debug().Msgf("Minna lesson list: %v", minnaList)
 	for _, minna := range minnaList {
-		wordCards, err := jps.buildWordCards(minna)
-		if err != nil {
-			logger.Log.Warn().Err(err).Msg("failed to build word cards")
-		} else {
-			proposalList = append(proposalList, *wordCards...)
-		}
+		// wordCards, err := jps.buildWordCards(minna)
+		// if err != nil {
+		// 	logger.Log.Warn().Err(err).Msg("failed to build word cards")
+		// } else {
+		// 	proposalList = append(proposalList, *wordCards...)
+		// }
 		sentences, err := jps.buildSentenceCards(minna)
 		if err != nil {
 			logger.Log.Warn().Err(err).Msg("failed to build sentence cards")
@@ -217,6 +217,11 @@ func (jps *jpxService) buildSentenceCards(minna string) (*[]langfi.ReviewCard, e
 			if buildSuccess {
 				newCard := langfi.NewReviewCard(sentence, meaning)
 				newCard.Properties = collectiveProps
+				if minna != "" {
+					newCard.Group = minna
+				} else {
+					newCard.Group = "NA"
+				}
 				proposalList = append(proposalList, newCard)
 			}
 		}
@@ -309,8 +314,8 @@ func (jps *jpxService) checkInitialized() bool {
 	return jps.ggService != nil
 }
 
-func (jps *jpxService) FetchProposal(ctx context.Context) (*langfi.ReviewCard, error) {
-	return jps.repo.FetchUnProcessCard(ctx, "")
+func (jps *jpxService) FetchProposal(ctx context.Context, group string) (*langfi.ReviewCard, error) {
+	return jps.repo.FetchUnProcessCard(ctx, group)
 }
 
 func (jps *jpxService) SubmitProposal(ctx context.Context, cardID uint64, newStatus string) error {

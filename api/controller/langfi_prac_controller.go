@@ -20,8 +20,11 @@ func (pctl *PracticeController) GetPracticeGroups(gc *gin.Context) {
 
 func (pctl *PracticeController) FetchPracticeCard(gc *gin.Context) {
 	// langID := gc.Param("lang-id")
-	groupID := gc.Param("group-id")
-	card, err := pctl.PracticeSrv.FetchCard(gc, groupID)
+	group := gc.Query("group")
+	if group == "" {
+		group = "NA"
+	}
+	card, err := pctl.PracticeSrv.FetchCard(gc, group)
 	if err != nil {
 		gc.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
 		return
@@ -79,4 +82,14 @@ func (pctl *PracticeController) GetCard(gc *gin.Context) {
 	}
 
 	gc.JSON(http.StatusOK, card)
+}
+
+func (pctl *PracticeController) GetGroupStats(gc *gin.Context) {
+	stats, err := pctl.PracticeSrv.GetGroupStats(gc)
+	if err != nil {
+		gc.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	gc.JSON(http.StatusOK, *stats)
 }

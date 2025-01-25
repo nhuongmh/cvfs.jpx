@@ -53,7 +53,11 @@ func (jctl *JpxController) GetAvailableLang(gc *gin.Context) {
 }
 
 func (jctl *JpxController) FetchProposal(gc *gin.Context) {
-	proposal, err := jctl.JpxService.FetchProposal(gc)
+	group := gc.Query("group")
+	if group == "" {
+		group = "NA"
+	}
+	proposal, err := jctl.JpxService.FetchProposal(gc, group)
 	if err != nil {
 		logger.Log.Error().Err(err).Msg("request process failed")
 		gc.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})

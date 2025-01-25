@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS cards (
     udpated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fsrs_id INTEGER,
     status VARCHAR(255),
+    card_group VARCHAR(255),
     FOREIGN KEY(fsrs_id) REFERENCES fsrs(id)
 );
 
