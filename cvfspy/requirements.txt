@@ -7,3 +7,8 @@ genanki
 google-api-python-client 
 google-auth-httplib2 
 google-auth-oauthlib
+newspaper3k
+pydantic
+wordfreq
+flask
+flask_cors

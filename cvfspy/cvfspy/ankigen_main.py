@@ -4,7 +4,7 @@ import base64
 import json
 import genanki
 import csv
-from ankigen.google_sheet import GoogleSheet
+from cvfspy.google_sheet import GoogleSheet
 import time
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 

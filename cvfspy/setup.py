@@ -1,4 +1,4 @@
-"""Python setup.py for anki_gen package"""
+"""Python setup.py for cvfspy package"""
 import io
 import os
 from setuptools import find_packages, setup
@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 def read(*paths, **kwargs):
     """Read the contents of a text file safely.
-    >>> read("anki_gen", "VERSION")
+    >>> read("cvfspy", "VERSION")
     '0.1.0'
     >>> read("README.md")
     ...
@@ -30,9 +30,9 @@ def read_requirements(path):
 
 
 setup(
-    name="anki_gen",
-    version=read("anki_gen", "VERSION"),
-    description="Awesome anki_gen created by nhuongmh",
+    name="cvfspy",
+    version=read("cvfspy", "VERSION"),
+    description="Awesome cvfspy created by nhuongmh",
     url="https://github.com/nhuongmh/anki-gen/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
@@ -40,7 +40,7 @@ setup(
     packages=find_packages(exclude=["tests", ".github"]),
     install_requires=read_requirements("requirements.txt"),
     entry_points={
-        "console_scripts": ["anki_gen = anki_gen.__main__:main"]
+        "console_scripts": ["cvfspy = cvfspy.__main__:main"]
     },
     extras_require={"test": read_requirements("requirements-test.txt")},
 )
