@@ -6,7 +6,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nhuongmh/cfvs.jpx/bootstrap"
-	"github.com/nhuongmh/cfvs.jpx/pkg/service/jpxpractice/repo"
 )
 
 const (
@@ -16,12 +15,22 @@ const (
 
 func Setup(app *bootstrap.Application, timeout time.Duration, gine *gin.Engine) {
 	publicRouter := gine.Group("public")
-	privateRouter := gine.Group("private")
+	// privateRouter := gine.Group("private")
 
 	publicRouter.Use(cors.Default())
 	publicRouter.Static("/data", "./data")
 
-	tr := repo.NewJpxPraticeRepo(app.DB)
-	NewJpxServiceRouter(app, tr, timeout, publicRouter, privateRouter)
-	NewJpxPraServiceRouter(app, tr, timeout, publicRouter, privateRouter)
+	// tr := repo.NewJpxPraticeRepo(app.DB)
+	// NewJpxServiceRouter(app, tr, timeout, publicRouter, privateRouter)
+	// NewJpxPraServiceRouter(app, tr, timeout, publicRouter, privateRouter)
+}
+
+func SetupPostgres(app *bootstrap.Application, timeout time.Duration, gine *gin.Engine) {
+	publicRouter := gine.Group("public")
+	privateRouter := gine.Group("private")
+
+	publicRouter.Use(cors.Default())
+	publicRouter.Static("/data", "./data")
+	NewIeAiRouter(app, timeout, publicRouter, privateRouter)
+
 }

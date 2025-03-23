@@ -3,13 +3,13 @@ package bootstrap
 import (
 	"context"
 
-	"github.com/nhuongmh/cfvs.jpx/pkg/database/sqlite3"
+	"github.com/nhuongmh/cfvs.jpx/pkg/database/postgresdb"
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
 )
 
 type Application struct {
 	Env *Env
-	DB  *sqlite3.DB
+	DB  *postgresdb.DB
 }
 
 func Init() Application {
@@ -17,7 +17,7 @@ func Init() Application {
 	app.Env = NewEnv()
 
 	ctx := context.Background()
-	db, err := sqlite3.ConnectDB(ctx, app.Env.SqliteDBUrl)
+	db, err := postgresdb.ConnectDB(ctx, app.Env.PostgresDBUrl)
 
 	if err != nil {
 		logger.Log.Fatal().Err(err).Msg("Failed connect database")

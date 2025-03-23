@@ -16,6 +16,7 @@ type Env struct {
 	ContextTimeout         int    `mapstructure:"CONTEXT_TIMEOUT"`
 	ServerAddress          string `mapstructure:"SERVER_ADDRESS"`
 	SqliteDBUrl            string `mapstructure:"SQLITE_DB_URL"`
+	PostgresDBUrl          string `mapstructure:"POSTGRES_DB_IE_URL"`
 	GoogleKeyBase64        string `mapstructure:"GOOGLE_API_KEY_BASE64"`
 	GoogleAIKey            string `mapstructure:"GOOGLE_AI_KEY"`
 	GoogleSpreadSheetId    string `mapstructure:"GOOGLE_SPREADSHEET_ID"`

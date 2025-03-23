@@ -1,4 +1,4 @@
-package jpxgen
+package gemini
 
 import (
 	"context"
