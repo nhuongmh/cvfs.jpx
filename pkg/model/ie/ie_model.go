@@ -12,8 +12,40 @@ type Article struct {
 	PublishDate string `json:"publish_date"`
 }
 
-type EWord struct {
+const (
+	ARTICLE_NEW       = "NEW"
+	ARTICLE_TESTED    = "TESTED"
+	ARTICLE_ANALYZED  = "ANALYZED"
+	ARTICLE_REVIEWED  = "REVIEWED"
+	ARTICLE_DISCARDED = "DISCARDED"
+	ARTICLE_LEARNING  = "ARTICLE_LEARNING"
+)
+
+type ProposeWord struct {
+	Word         string  `json:"word"`
+	Context      string  `json:"context_sentence"`
+	WordFreq     float32 `json:"freq"`
+	RefArticleID uint64  `json:"ref_id"`
+}
+
+type WordList struct {
 	model.Base
-	Word         string `json:"word"`
-	RefArticleID uint64 `json:"ref_id"`
+}
+
+type Question struct {
+	Type         string `json:"type"`
+	QuestionText string `json:"question_text"`
+
+	Options   []string `json:"options,omitempty"` // For multiple choice
+	Answer    string   `json:"answer"`
+	Headings  []string `json:"headings,omitempty"`  // For matching headings
+	Paragraph string   `json:"paragraph,omitempty"` // For matching headings
+}
+
+type ArticleReading struct {
+	model.Base
+	ArticleID uint64     `json:"article_id"`
+	Status    string     `json:"status"`
+	Score     float32    `json:"score"`
+	Questions []Question `json:"questions"`
 }

@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS article_learning (
+    id SERIAL PRIMARY KEY,
+    article_id INTEGER NOT NULL,
+    questions JSON NOT NULL,
+    article_status VARCHAR NOT NULL,
+    score REAL NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

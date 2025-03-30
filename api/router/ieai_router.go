@@ -19,5 +19,7 @@ func NewIeAiRouter(app *bootstrap.Application, timeout time.Duration, publicRout
 	privateRouter.POST(DEFAULT_API_PREFIX+"/ie/article", tc.SaveArticle)
 	privateRouter.DELETE(DEFAULT_API_PREFIX+"/ie/article/:id", tc.DeleteArticle)
 	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/url", tc.ParseArticleFromUrl)
+	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/questions", tc.GenQuestionForArticle)
+	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/proposed_vocab", tc.ExtractProposedWordsForArticle)
 
 }

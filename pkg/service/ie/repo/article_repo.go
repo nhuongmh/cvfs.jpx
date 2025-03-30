@@ -69,6 +69,8 @@ func (ir *IErepo) FindAll(ctx context.Context, limit, skip uint64) ([]*ie.Articl
 		return nil, 0, errors.Wrap(err, "build query")
 	}
 
+	logger.Log.Debug().Str("sql find all", sql).Msg("query")
+
 	rows, err := ir.db.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "query")

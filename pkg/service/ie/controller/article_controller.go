@@ -22,7 +22,7 @@ type pageMeta struct {
 
 func (tc *IeController) GetAllArticle(c *gin.Context) {
 	page, pageSize := tc.parsePagination(c, 1, 20)
-	articles, total, err := tc.Service.GetAllArticles(c, page, pageSize)
+	articles, total, err := tc.Service.GetAllArticles(c, pageSize, page)
 	if err != nil {
 		logger.Log.Error().Err(err).Msg("failed to get all articles")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get all articles"})
@@ -111,6 +111,38 @@ func (tc *IeController) ParseArticleFromUrl(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, article)
+}
+
+func (tc *IeController) GenQuestionForArticle(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	articleReading, err := tc.Service.GenerateQuestion(c, id)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to generate question")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate question"})
+		return
+	}
+	c.JSON(http.StatusOK, articleReading)
+}
+
+func (tc *IeController) ExtractProposedWordsForArticle(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	words, err := tc.Service.ExtractVocab(c, id)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to extracting words")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to extracting words"})
+		return
+	}
+	c.JSON(http.StatusOK, words)
 }
 
 func (tc *IeController) parsePagination(c *gin.Context, defaultPage, defaultSize uint64) (uint64, uint64) {
