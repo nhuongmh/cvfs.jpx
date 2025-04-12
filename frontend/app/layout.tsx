@@ -34,12 +34,6 @@ export default function RootLayout({
                 @nhuongmh
               </Link>
             </p>
-            <p>
-              .langfi is deployed on{" "}
-              <Link target="_blank" href="https://vercel.com" className="underline duration-150 hover:text-zinc-200">
-                Vercel
-              </Link>{" "}
-            </p>
           </div>
         </footer>
         </Providers>

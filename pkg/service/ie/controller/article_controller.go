@@ -113,20 +113,36 @@ func (tc *IeController) ParseArticleFromUrl(c *gin.Context) {
 	c.JSON(http.StatusOK, article)
 }
 
-func (tc *IeController) GenQuestionForArticle(c *gin.Context) {
+func (tc *IeController) GetArticleReading(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		logger.Log.Error().Err(err).Msg("failed to parse id")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
 		return
 	}
-	articleReading, err := tc.Service.GenerateQuestion(c, id)
+	articleReading, err := tc.Service.GetArticleReading(c, id)
 	if err != nil {
-		logger.Log.Error().Err(err).Msg("failed to generate question")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate question"})
+		logger.Log.Error().Err(err).Msg("failed to get question")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get question"})
 		return
 	}
 	c.JSON(http.StatusOK, articleReading)
+}
+
+func (tc *IeController) ReGenArticleReading(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	err = tc.Service.ReGenArticleReading(c, id)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to regenerate question")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to regenerate question"})
+		return
+	}
+	c.JSON(http.StatusOK, "OK")
 }
 
 func (tc *IeController) ExtractProposedWordsForArticle(c *gin.Context) {

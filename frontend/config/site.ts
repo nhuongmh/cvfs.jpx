@@ -59,4 +59,5 @@ export const siteConfig = {
         googlechat: "https://chat.google.com/room/AAAA-JatYZI?cls=7",
     },
     server_url_prefix: `http://${process.env.NEXT_PUBLIC_SERVER_URL}/public/api/v1`,
+    private_url_prefix: `http://${process.env.NEXT_PUBLIC_SERVER_URL}/private/api/v1`
 };

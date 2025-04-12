@@ -33,8 +33,10 @@ type WordList struct {
 }
 
 type Question struct {
-	Type         string `json:"type"`
-	QuestionText string `json:"question_text"`
+	model.Base
+	ArticleReadingId uint64 `json:"article_reading_id"` // ID of the article reading
+	Type             string `json:"type"`
+	QuestionText     string `json:"question"`
 
 	Options   []string `json:"options,omitempty"` // For multiple choice
 	Answer    string   `json:"answer"`

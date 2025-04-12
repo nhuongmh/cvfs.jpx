@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS article_learning (
+CREATE TABLE IF NOT EXISTS article_reading (
     id SERIAL PRIMARY KEY,
     article_id INTEGER NOT NULL,
     questions JSON NOT NULL,

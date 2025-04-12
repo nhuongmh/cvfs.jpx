@@ -9,3 +9,12 @@ Remember to share the spreadsheet with service account email (nhuongmh-jpx@cvfs-
 
 ## Unit Test
 go test -v -run TestMaziiFetcher_FetchMaziiKanji github.com/nhuongmh/cfvs.jpx/pkg/supporter/mazii
+
+
+PostgreSQL in WSL:
+user=postgres, pass=clover.fox (access through sudo -su)
+user=clover, pass=foxie
+psql -U clover -d ie
+
+#: \dt (list table)
+-l : list database
