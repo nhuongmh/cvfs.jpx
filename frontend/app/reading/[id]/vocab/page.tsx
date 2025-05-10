@@ -1,12 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Article, LearningWord } from '@/models/article';
+import { Article, LearningWord, VocabList } from '@/models/article';
 import { Button, Checkbox, Input, CheckboxGroup } from "@heroui/react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, getKeyValue } from "@heroui/react";
-import type {Selection} from "@heroui/react";
+import type { Selection } from "@heroui/react";
 import { ProposedWord } from "@/models/article";
 import { useSearchParams, usePathname } from "next/navigation";
 import { siteConfig } from "@/config/site";
+import LearningVocabPage from "./learning_page";
 import '../ielts.css';
 
 const ProposalVocabPage = ({
@@ -22,18 +23,18 @@ const ProposalVocabPage = ({
 
     const columns = [
         {
-          key: "word",
-          label: "VOCAB",
+            key: "word",
+            label: "VOCAB",
         },
         {
-          key: "context",
-          label: "CONTEXT",
+            key: "context",
+            label: "CONTEXT",
         },
         {
-          key: "freq",
-          label: "FREQ",
+            key: "freq",
+            label: "FREQ",
         },
-      ];
+    ];
 
     useEffect(() => {
         const fetchVocabs = async () => {
@@ -200,30 +201,9 @@ const ProposalVocabPage = ({
     );
 };
 
-const LearningVocabPage = ({
-    learningVocabs,
-}: {
-    learningVocabs: LearningWord[];
-}) => {
-    return (
-        <div className="p-4">
-            <h1 className="text-xl font-bold mb-4">Learning Vocabularies</h1>
-            <CheckboxGroup>
-                {learningVocabs?.map((vocab, index) => (
-                    <div key={index} className="flex items-center mb-2">
-                        <div className="ml-2">
-                            <p className="font-medium">{vocab.word}</p>
-                            <p className="text-sm text-gray-500">{vocab.context}</p>
-                        </div>
-                    </div>
-                ))}
-            </CheckboxGroup>
-        </div>
-    );
-};
 
 const VocabPage = () => {
-    const [learningVocabs, setLearningVocabs] = useState<LearningWord[] | null>(
+    const [vocabList, setVocabList] = useState<VocabList | null>(
         null
     );
     const [isLoading, setIsLoading] = useState(true);
@@ -242,13 +222,13 @@ const VocabPage = () => {
                 const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
-                    setLearningVocabs(data);
+                    setVocabList(data);
                 } else {
-                    setLearningVocabs(null);
+                    setVocabList(null);
                 }
             } catch (error) {
                 console.error("Error fetching vocabularies:", error);
-                setLearningVocabs(null);
+                setVocabList(null);
             } finally {
                 setIsLoading(false);
             }
@@ -267,8 +247,8 @@ const VocabPage = () => {
         }
     }
 
-    return learningVocabs ? (
-        <LearningVocabPage learningVocabs={learningVocabs} />
+    return vocabList ? (
+        <LearningVocabPage vocabList={vocabList} articleId={articleId} />
     ) : (
         <ProposalVocabPage articleId={articleId} />
     );

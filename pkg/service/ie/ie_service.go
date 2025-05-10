@@ -14,17 +14,19 @@ import (
 )
 
 type IEservice struct {
-	contextTimeout time.Duration
-	repo           *ierepo.IErepo
-	env            *bootstrap.Env
-	gemi           *gemini.GoogleAI
+	contextTimeout     time.Duration
+	repo               *ierepo.IErepo
+	env                *bootstrap.Env
+	gemi               *gemini.GoogleAI
+	vocabProposalCache map[uint64]*[]ie.ProposeWord
 }
 
 func NewIEservice(timeout time.Duration, env *bootstrap.Env, db *postgresdb.DB) *IEservice {
 	ies := &IEservice{
-		contextTimeout: timeout,
-		repo:           ierepo.NewIeRepo(db),
-		env:            env,
+		contextTimeout:     timeout,
+		repo:               ierepo.NewIeRepo(db),
+		env:                env,
+		vocabProposalCache: make(map[uint64]*[]ie.ProposeWord),
 	}
 	gemi, err := gemini.NewGoogleAI(ies.env.GoogleAIKey)
 	if err != nil {

@@ -97,6 +97,8 @@ type IeVocab struct {
 	model.Base
 	Word          string            `json:"word"`
 	VocabListId   uint64            `json:"vocab_list_id"`
+	Context       string            `json:"context_sentence"`
+	WordFreq      float32           `json:"freq"`
 	Pronunciation []IePronunciation `json:"pronunciation"`
 	Definitions   []IeDefinition    `json:"definition"`
 	Properties    map[string]string `json:"properties"`

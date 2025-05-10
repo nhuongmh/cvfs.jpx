@@ -4,6 +4,7 @@ import traceback
 from cvfspy.usecases.cambrige_dict_fetcher import get_dictionary
 from cvfspy.usecases.article_fetcher import fetch_article
 from cvfspy.usecases.vocab_analyzer import article_vocab_extractor
+from cvfspy.usecases.gen_anki_card_ie import gen_ie_anki_cards
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -51,6 +52,27 @@ def fetch_english_multiple_vocab(language):
             print(f"Fetched dictionary for {entry}: {vocab}")
             processed_vocab[entry] = vocab
         return jsonify(processed_vocab), 200
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/vocab/ankigen/local', methods=['POST'])
+def generate_ie_anki_deck():
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+    try:
+        deck_name = data.get('name', '')
+        if not deck_name:
+            return jsonify({"error": "Deck name is required"}), 400
+        vocabs = data.get('vocabs', [])
+        if not vocabs:
+            return jsonify({"error": "Vocabs are required"}), 400
+        
+        anki_deck_file = gen_ie_anki_cards(vocabs, f"CVFS.IE Vocab Collection::{deck_name}")
+        if not anki_deck_file:
+            return jsonify({"error": "Failed to generate Anki deck"}), 500
+        return jsonify(anki_deck_file), 200
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

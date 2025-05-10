@@ -64,7 +64,7 @@ export interface ProposedWord {
 export interface LearningWord {
     id: number;
     word: string;
-    context: string;
+    context_sentence: string;
     freq: number;
     ref_id: number;
 }

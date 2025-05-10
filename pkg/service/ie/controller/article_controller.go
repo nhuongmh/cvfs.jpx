@@ -275,6 +275,23 @@ func (tc *IeController) GetVocabListByArticleId(c *gin.Context) {
 	c.JSON(http.StatusOK, list)
 }
 
+func (tc *IeController) GenAnkiDeckForVocabList(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+
+	err = tc.Service.GenAnkiDeckForVocabList(c, id)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to gen Anki deck for vocab list")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to gen Anki deck for vocab list"})
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
 func (tc *IeController) parsePagination(c *gin.Context, defaultPage, defaultSize uint64) (uint64, uint64) {
 	page := c.DefaultQuery("page", "1")
 	pageSize := c.DefaultQuery("page_size", "20")

@@ -30,5 +30,6 @@ func NewIeAiRouter(app *bootstrap.Application, timeout time.Duration, publicRout
 	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/proposed_vocab", tc.ExtractProposedWordsForArticle)
 	privateRouter.POST(DEFAULT_API_PREFIX+"/ie/article/:id/proposed_vocab", tc.HandleVocabProposalSubmit)
 	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/vocab", tc.GetVocabListByArticleId)
+	privateRouter.PUT(DEFAULT_API_PREFIX+"/ie/vocab/:id/anki", tc.GenAnkiDeckForVocabList)
 
 }

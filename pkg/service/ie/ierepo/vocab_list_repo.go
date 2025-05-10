@@ -178,5 +178,23 @@ func (ir *IErepo) UpdateVocabList(ctx context.Context, list *ie.IeVocabList) (*i
 		return nil, errors.Wrap(err, "exec")
 	}
 
+	// update all vocabs of this list
+	for _, word := range list.Vocabs {
+		savedVocab, err := ir.FindOneVocabWordInList(ctx, word.Word, list.ID)
+		word.VocabListId = list.ID
+		if err != nil {
+			_, err = ir.SaveVocab(ctx, &word)
+			if err != nil {
+				logger.Log.Warn().Err(err).Msg("UpdateVocabList: save vocab failed")
+			}
+		} else {
+			word.ID = savedVocab.ID
+			_, err = ir.UpdateVocab(ctx, &word)
+			if err != nil {
+				logger.Log.Warn().Err(err).Msg("UpdateVocabList: update vocab failed")
+			}
+		}
+	}
+
 	return list, nil
 }
