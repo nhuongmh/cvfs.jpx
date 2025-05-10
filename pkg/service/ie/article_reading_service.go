@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/nhuongmh/cfvs.jpx/pkg/logger"
@@ -32,7 +33,6 @@ func (ies *IEservice) GenArticleReading(ctx context.Context, article *ie.Article
 	articleReading := &ie.ArticleReading{
 		ArticleID: article.ID,
 		Status:    ie.ARTICLE_NEW,
-		Score:     0,
 		Questions: *questions,
 	}
 	return ies.repo.SaveArticleReading(ctx, articleReading)
@@ -44,6 +44,90 @@ func (ies *IEservice) GetArticleReading(ctx context.Context, articleId uint64) (
 		return nil, errors.Wrap(err, "failed to get article reading")
 	}
 	return articleReading, nil
+}
+
+func (ies *IEservice) GradeQuestionSubmit(ctx context.Context, articleReadingId uint64, answers map[int]string) (*ie.TestResult, error) {
+	articleReading, err := ies.repo.FindArticleReadingByID(ctx, articleReadingId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get article reading")
+	}
+	if articleReading == nil {
+		return nil, errors.New("article reading not found")
+	}
+	if len(articleReading.Questions) != len(answers) {
+		return nil, errors.New("number of answers does not match number of questions")
+	}
+
+	numberCorrect := 0
+	testResult := ie.TestResult{
+		ArticleReadingId: articleReading.ID,
+		Score:            0.0,
+		QuestionResults:  []ie.QuestionResult{},
+	}
+	for i := range articleReading.Questions {
+		q := articleReading.Questions[i]
+		userAnswer, ok := answers[int(q.ID)]
+		if !ok {
+			logger.Log.Warn().Msgf("answer for question %d not found", i)
+			userAnswer = ""
+		}
+		questionResult := ie.QuestionResult{
+			QuestionID: q.ID,
+			Answer:     q.Answer,
+			UserAnswer: userAnswer,
+			Correct:    false,
+		}
+		if q.Type == ie.QUESTION_TYPE_MULTIPLE_CHOICE {
+			if strings.EqualFold(q.Answer, userAnswer) {
+				questionResult.Correct = true
+			}
+		} else if q.Type == ie.QUESTION_TYPE_SHORT_ANSWER {
+			if strings.Contains(strings.ToLower(q.Answer), strings.ToLower(userAnswer)) {
+				questionResult.Correct = true
+			}
+		} else if q.Type == ie.QUESTION_TYPE_TRUE_FALSE {
+			if strings.EqualFold(q.Answer, userAnswer) {
+				questionResult.Correct = true
+			}
+		} else {
+			logger.Log.Warn().Msgf("unsupport question type %s", q.Type)
+			if strings.EqualFold(q.Answer, userAnswer) {
+				questionResult.Correct = true
+			}
+		}
+
+		if questionResult.Correct {
+			numberCorrect++
+		}
+		testResult.QuestionResults = append(testResult.QuestionResults, questionResult)
+	}
+	testResult.Score = float32(numberCorrect) / float32(len(articleReading.Questions)) * 100.0
+	savedTestResult, err := ies.repo.SaveTestSubmission(ctx, &testResult)
+	return savedTestResult, err
+}
+
+func (ies *IEservice) GetTestSubmission(ctx context.Context, id uint64) (*ie.TestResult, error) {
+	testResult, err := ies.repo.GetTestSubmissionById(ctx, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get test submission")
+	}
+	return testResult, nil
+}
+
+func (ies *IEservice) GetTestSubmissionByReadingId(ctx context.Context, readingId uint64) (*[]ie.TestResult, error) {
+	testResults, err := ies.repo.FindSubmissionByReadingId(ctx, readingId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get test submission")
+	}
+	return testResults, nil
+}
+
+func (ies *IEservice) DeleteTestSubmission(ctx context.Context, id uint64) error {
+	err := ies.repo.DeleteSubmission(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete test submission")
+	}
+	return nil
 }
 
 func (ies *IEservice) GenerateQuestion(ctx context.Context, id uint64) (*[]ie.Question, error) {
@@ -65,17 +149,14 @@ func (ies *IEservice) GenerateQuestion(ctx context.Context, id uint64) (*[]ie.Qu
 		- Multiple choice
 		- Short answer
 		- True/False/Not Given
-		- Matching headings
 	Response in JSON format with schema as follows:
-		Question = {'type': string, 'question': string, 'options': []string, 'answer': string, 'headings': []string, 'paragraph': string}
+		Question = {'type': string, 'question': string, 'options': []string, 'answer': string}
 		Return: Array<Question>
 		Where: 
-		- type: type of question, can be one of the following: 'multiple_choice', 'short_answer', 'true_false_not_given', 'matching_headings'
+		- type: type of question, can be one of the following: 'multiple_choice', 'short_answer', 'true_false_not_given'
 		- question: the question text
 		- options: the options for multiple choice question, empty for other types
-		- answer: the answer for the question
-		- headings: the headings for matching headings question, empty for other types
-		- paragraph: the paragraph for matching headings question, empty for other types
+		- answer: the answer for the question, if the question is multiple choice, the answer should be A, B, C, D,... otherwise it is the answer text
 	-----
 	Title: %v
 	Article: %v

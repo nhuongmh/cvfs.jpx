@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { siteConfig } from "@/config/site";
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@heroui/table";
+import {Button, ButtonGroup} from "@heroui/button";
 import Link from "next/link";
 
 interface ArticleData {
@@ -74,18 +75,29 @@ export default function ArticlesPage() {
 
     return (
         <div className="container px-8 mx-auto mt-16 lg:mt-32">
-            <Table aria-label="Articles Table">
-                <TableHeader columns={columns}>
-                    {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
-                </TableHeader>
-                <TableBody items={articles}>
-                    {(item) => (
-                        <TableRow key={item.id}>
-                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+            <div className="mb-4">
+                <Link href="/reading/add">
+                    <Button color='primary'>Add New Article</Button>
+                </Link>
+            </div>
+            {articles && articles.length > 0 ? (
+                <Table aria-label="Articles Table">
+                    <TableHeader columns={columns}>
+                        {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
+                    </TableHeader>
+                    <TableBody items={articles}>
+                        {(item) => (
+                            <TableRow key={item.id}>
+                                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            ) : (
+                <div className="flex justify-center items-center h-64">
+                    No data available
+                </div>
+            )}
         </div>
     );
 };

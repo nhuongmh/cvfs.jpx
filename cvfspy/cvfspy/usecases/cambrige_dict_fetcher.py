@@ -179,7 +179,7 @@ def get_dictionary(language, entry) -> dict:
         definitions.append(
             {
                 "id": idx,
-                "pos": get_pos(element),
+                "position": get_pos(element),
                 "source": get_source(element),
                 "text": def_text_element.text if def_text_element else "",
                 "translation": def_trans_element.text if def_trans_element else "",
@@ -193,7 +193,7 @@ def get_dictionary(language, entry) -> dict:
     else:
         return {
             "word": word,
-            "pos": pos,
+            "position": pos,
             "verbs": verbs,
             "pronunciation": audio,
             "definition": definitions,

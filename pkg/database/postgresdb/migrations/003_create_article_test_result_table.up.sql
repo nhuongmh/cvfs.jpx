@@ -1,8 +1,8 @@
-CREATE TABLE IF NOT EXISTS article_reading (
+CREATE TABLE IF NOT EXISTS article_test_result (
     id SERIAL PRIMARY KEY,
-    article_id INTEGER NOT NULL,
-    questions JSON NOT NULL,
-    article_status VARCHAR NOT NULL,
+    article_reading_id INTEGER NOT NULL,
+    questions_result JSON NOT NULL,
+    score REAL NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

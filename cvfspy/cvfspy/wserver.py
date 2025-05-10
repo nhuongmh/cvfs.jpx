@@ -20,6 +20,40 @@ def get_english_dictionary(language, entry):
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/dictionary/<language>/', methods=['POST'])
+def fetch_english_multiple_vocab(language):
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+    def empty_word(word):
+        return {
+            "word": word,
+            "position": [],
+            "verbs": [],
+            "pronunciation": [],
+            "definition": [],
+        }
+    try:
+        processed_vocab = {}
+        for entry in data:
+            if not entry:
+                print("Empty entry found, skipping...")
+                continue
+            try:
+                vocab =  get_dictionary(language, entry)
+            except Exception as e:
+                print(f"Error fetching dictionary for {entry}: {e}")
+                vocab = empty_word(entry)
+            if not vocab:
+                print(f"No vocabulary found for entry: {entry}")
+                vocab = empty_word(entry)
+            print(f"Fetched dictionary for {entry}: {vocab}")
+            processed_vocab[entry] = vocab
+        return jsonify(processed_vocab), 200
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/article/')
 def get_article():

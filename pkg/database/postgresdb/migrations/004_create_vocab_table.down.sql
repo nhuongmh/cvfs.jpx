@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS ie_vocab;

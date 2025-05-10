@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
+    "@heroui/react": "^2.7.8",
     "@heroui/system": "^2.4.7",
     "@heroui/table": "^2.2.9",
     "@heroui/theme": "^2.4.6",
@@ -26,7 +27,7 @@
     "base-x": "^5.0.0",
     "eslint": "9.13.0",
     "eslint-config-next": "15.0.1",
-    "framer-motion": "^11.11.10",
+    "framer-motion": "^11.18.2",
     "next": "15.0.1",
     "next-themes": "^0.3.0",
     "react": "18.3.1",

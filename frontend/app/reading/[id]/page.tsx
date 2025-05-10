@@ -1,23 +1,27 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 import './ielts.css';
 import { Article, Question, ArticleReading } from '@/models/article';
 import { useSearchParams, usePathname } from 'next/navigation'
 import { siteConfig } from "@/config/site";
+import { Button, ButtonGroup } from "@heroui/button";
+import { RadioGroup, Radio } from "@heroui/radio";
+import { Input, Form } from "@heroui/react";
 
 function ArticleTestPage() {
   const [article, setArticle] = useState<Article | null>(null);
   const [articleReading, setArticleReading] = useState<ArticleReading | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(60);
   const [loading, setLoading] = useState(true);
+  const [textAnswer, setTextAnswer] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
-    const pathname = usePathname();
-    if (pathname === null || searchParams === null) {
-        return null
-    }
-    const articleId = pathname.split('/').pop() || searchParams.get('id') || "";
+  const pathname = usePathname();
+  if (pathname === null || searchParams === null) {
+    return null
+  }
+  const articleId = pathname.split('/').pop() || searchParams.get('id') || "";
 
   // Fetch article and questions from API
   useEffect(() => {
@@ -57,30 +61,84 @@ function ArticleTestPage() {
     fetchQuestions();
   }, []);
 
-  const handleAnswerSelection = (questionIndex: number, answer: number) => {
+  const handleAnswerChange = (questionId: number, answer: string) => {
     if (!articleReading) {
       console.error('Article reading data is not available');
       return;
     }
-    if (questionIndex < 0 || questionIndex >= articleReading?.questions.length) return;
-    if (answer < 0 || answer >= articleReading.questions[questionIndex].options.length) return;
-    articleReading.questions[questionIndex].user_answer_option = answer;
-  };
-
-  const handleTextAnswerChange = (questionIndex: number, answer: string) => {
-    if (!articleReading) {
-      console.error('Article reading data is not available');
-      return;
+    const question = articleReading.questions.find(q => q.id === questionId);
+    if (question) {
+      question.user_answer_str = answer;
     }
-    if (questionIndex < 0 || questionIndex >= articleReading.questions.length) return;
-    articleReading.questions[questionIndex].user_answer_str = answer;
   };
 
   const handleSubmit = () => {
-    if (!articleReading) {
+
+    if (!articleReading || !articleReading.questions) {
       console.error('Article reading data is not available');
       return;
     }
+
+    for (const question of articleReading.questions) {
+      if (!question.user_answer_str || question.user_answer_str.trim() === '') {
+        alert(`Please answer all questions before submitting.`);
+        return;
+      }
+    }
+
+    let answers = new Map<number, string>();
+    for (const question of articleReading.questions) {
+      answers.set(question.id, question.user_answer_str);
+    }
+    console.log('Answers:', answers);
+    console.log(JSON.stringify(Object.fromEntries(answers)))
+    // const answers = articleReading.questions.reduce((acc, question) => {
+    //   acc[question.id] = question.user_answer_str || '';
+
+    //   return acc;
+    // }, {} as Record<number, string>);
+
+    const submitUrl = `${siteConfig.private_url_prefix}/ie/article/reading/${articleReading.id}/submit`;
+
+    fetch(submitUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(Object.fromEntries(answers)),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to submit answers');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Submission successful:', data);
+
+        // Update the articleReading object with the results
+        if (articleReading) {
+          articleReading.questions.forEach((question) => {
+            const result = data.question_results.find(
+              (res: any) => res.question_id === question.id
+            );
+            if (result) {
+              question.correct = result.correct;
+              question.correct_answer = result.answer;
+            }
+          });
+        }
+
+        // Display the final score
+        alert(`Test submitted successfully! Your score: ${data.score}`);
+        articleReading.score = data.score;
+        setArticleReading({ ...articleReading }); // Trigger re-render
+      })
+      .catch((err) => {
+        console.error('Error submitting answers:', err);
+        alert('Error submitting answers. Please try again.');
+      });
+
     alert('Test submitted!');
     console.log('Answers:', articleReading.questions);
   };
@@ -107,77 +165,82 @@ function ArticleTestPage() {
   // Function to format article content with proper paragraphs
   const formatContent = (content: string) => {
     if (!content) return [];
-    return content.split('\n').map((paragraph, index) => 
+    return content.split('\n').map((paragraph, index) =>
       <p key={index}>{paragraph}</p>
     );
   };
 
   // Render the appropriate question type
   const renderQuestion = (question: Question, index: number) => {
-    switch(question.type) {
+    const renderStatus = () => {
+      if (question.correct !== undefined) {
+
+        if (question.correct) {
+          return <p className="pt-6  text-green-500 font-bold">Correct</p>;
+        } else if (question.correct_answer) {
+          return (
+            <div className="pt-6 font-bold">
+              <p className='text-red-500'>Incorrect</p>
+              <p>Answer: {question.correct_answer}</p>
+            </div>
+          );
+        }
+      }
+      return null;
+    };
+
+    switch (question.type) {
       case 'multiple_choice':
         return (
           <div className="question" key={index}>
             <p className="question-number">{index + 1}. {question.question}</p>
             <div className="options">
-              {question.options.map((option, optionIndex) => (
-                <div className="option" key={optionIndex}>
-                  <input 
-                    type="radio" 
-                    id={`q${index}_${optionIndex}`} 
-                    name={`question${index}`} 
-                    value={option}
-                    checked={question.user_answer_option === optionIndex}
-                    onChange={() => handleAnswerSelection(index, optionIndex)}
-                  />
-                  <label htmlFor={`q${index}_${optionIndex}`}>
+              <RadioGroup
+                value={question.user_answer_str}
+                onValueChange={(value) => handleAnswerChange(question.id, value)}
+              >
+                {question.options.map((option, optionIndex) => (
+                  <Radio key={optionIndex} value={String.fromCharCode(65 + optionIndex)}>
                     <span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span> {option}
-                  </label>
-                </div>
-              ))}
+                  </Radio>
+                ))}
+              </RadioGroup>
             </div>
+            {renderStatus()}
           </div>
         );
-      
+
       case 'short_answer':
         return (
           <div className="question" key={index}>
             <p className="question-number">{index + 1}. {question.question}</p>
             <div className="short-answer">
-              <input 
-                type="text" 
-                placeholder="Enter your answer"
-                value={question.user_answer_str || ''}
-                onChange={(e) => handleTextAnswerChange(index, e.target.value)}
-              />
+              <Input value={question.user_answer_str} onValueChange={(value) => handleAnswerChange(question.id, value)} />
             </div>
+            {renderStatus()}
           </div>
         );
-      
+
       case 'true_false_not_given':
         return (
           <div className="question" key={index}>
             <p className="question-number">{index + 1}. {question.question}</p>
             <div className="options">
-              {['TRUE', 'FALSE', 'NOT GIVEN'].map((option, optionIndex) => (
-                <div className="option" key={optionIndex}>
-                  <input 
-                    type="radio" 
-                    id={`q${index}_${option}`} 
-                    name={`question${index}`} 
-                    value={option}
-                    checked={question.user_answer_option === optionIndex}
-                    onChange={() => handleAnswerSelection(index, optionIndex)}
-                  />
-                  <label htmlFor={`q${index}_${option}`}>
+              <RadioGroup
+                value={question.user_answer_str}
+                onValueChange={(value) => handleAnswerChange(question.id, value)}
+              >
+                {['TRUE', 'FALSE', 'NOT GIVEN'].map((option, optionIndex) => (
+                  <Radio key={optionIndex} value={option}>
                     <span className="option-letter">{option}</span>
-                  </label>
-                </div>
-              ))}
+                  </Radio>
+                ))}
+              </RadioGroup>
             </div>
+            {renderStatus()}
           </div>
         );
-      
+
       case 'matching_headings':
         return (
           <div className="question" key={index}>
@@ -188,13 +251,13 @@ function ArticleTestPage() {
             <div className="options">
               {question.headings.map((heading, headingIndex) => (
                 <div className="option" key={headingIndex}>
-                  <input 
-                    type="radio" 
-                    id={`q${index}_${headingIndex}`} 
-                    name={`question${index}`} 
+                  <input
+                    type="radio"
+                    id={`q${index}_${headingIndex}`}
+                    name={`question${index}`}
                     value={heading}
-                    checked={question.user_answer_option == headingIndex}
-                    onChange={() => handleAnswerSelection(index, headingIndex)}
+                    checked={question.user_answer_str == heading}
+                    onChange={() => handleAnswerChange(question.id, heading)}
                   />
                   <label htmlFor={`q${index}_${headingIndex}`}>
                     <span className="option-letter">{heading}</span>
@@ -202,14 +265,16 @@ function ArticleTestPage() {
                 </div>
               ))}
             </div>
+            {renderStatus()}
           </div>
         );
-      
+
       default:
         return (
           <div className="question" key={index}>
             <p className="question-number">{index + 1}. {question.question}</p>
             <p className="error-message">Unknown question type</p>
+            {renderStatus()}
           </div>
         );
     }
@@ -217,22 +282,19 @@ function ArticleTestPage() {
 
   return (
     <div className="app-container">
-      <header className="app-header">
+      <div className="app-header">
         <div className="logo">
-          <img src="/Dharma_Initiative_logo.svg.png" alt="IELTS Online Tests" />
+          <img src="/images/Dharma_Initiative_logo.svg.png" alt="IELTS Online Tests" />
         </div>
         <div className="timer">
           <span>{timeRemaining} minutes remaining</span>
         </div>
         <div className="controls">
-          <button className="btn-fullscreen">
-            <i className="fas fa-expand"></i>
-          </button>
-          <button className="btn-submit" onClick={handleSubmit}>
+          <Button color="primary" onPress={handleSubmit}>
             Submit <i className="fas fa-arrow-right"></i>
-          </button>
+          </Button>
         </div>
-      </header>
+      </div>
 
       <div className="main-content">
         <div className="reading-section">
@@ -240,26 +302,25 @@ function ArticleTestPage() {
           <div className="passage-container">
             {article && (
               <>
-          <div className="passage-header">
-            <div className="passage-logo">
-              <img src="/ielts-logo-small.png" alt="Reading Comprehensive Test" />
-            </div>
-            <div className="passage-title">
-              <h2>{article.title}</h2>
-            </div>
-          </div>
+                <div className="passage-header">
+                  <div className="passage-logo">
+                  </div>
+                  <div className="passage-title">
+                    <h2>{article.title}</h2>
+                  </div>
+                </div>
 
-          <div className="passage-content">
-            <h2>{article.title}</h2>
-            {article.image && (
-              <div className="passage-image">
-                <img src={article.image} alt={article.title} />
-              </div>
-            )}
-            <div className="passage-text">
-              {formatContent(article.content)}
-            </div>
-          </div>
+                <div className="passage-content">
+                  <h2>{article.title}</h2>
+                  {article.image && (
+                    <div className="passage-image">
+                      <img src={article.image} alt={article.title} />
+                    </div>
+                  )}
+                  <div className="passage-text">
+                    {formatContent(article.content)}
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -267,15 +328,22 @@ function ArticleTestPage() {
         </div>
 
         <div className="questions-section">
+          {articleReading?.score !== undefined && (
+            <div className="score-display">
+              <h3>Your Score: {articleReading.score}</h3>
+            </div>
+          )}
           <div className="questions-header">
             <h2>Questions 1-{articleReading?.questions.length}</h2>
             <p>Answer the questions according to the instructions.</p>
           </div>
 
           <div className="questions-container">
-          {articleReading?.questions.map((question, index) => (
+            <Form className="questions-form">
+            {articleReading?.questions.map((question, index) => (
               renderQuestion(question, index)
             ))}
+            </Form>
           </div>
 
         </div>

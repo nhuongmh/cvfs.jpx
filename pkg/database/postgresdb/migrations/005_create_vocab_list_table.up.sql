@@ -1,8 +1,7 @@
-CREATE TABLE IF NOT EXISTS article_reading (
+CREATE TABLE IF NOT EXISTS ie_vocab_list (
     id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
     article_id INTEGER NOT NULL,
-    questions JSON NOT NULL,
-    article_status VARCHAR NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

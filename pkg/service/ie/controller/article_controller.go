@@ -145,6 +145,78 @@ func (tc *IeController) ReGenArticleReading(c *gin.Context) {
 	c.JSON(http.StatusOK, "OK")
 }
 
+func (tc *IeController) SubmitReadingTest(c *gin.Context) {
+	readingId, err := strconv.ParseUint(c.Param("reading_id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	var answers map[int]string
+	err = c.ShouldBindJSON(&answers)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to bind answers")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to bind answers"})
+		return
+	}
+
+	testResult, err := tc.Service.GradeQuestionSubmit(c, readingId, answers)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to grade question submit")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to grade question submit"})
+		return
+	}
+	c.JSON(http.StatusOK, testResult)
+}
+
+func (tc *IeController) GetTestSubmission(c *gin.Context) {
+	submitId, err := strconv.ParseUint(c.Param("submit_id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	testResult, err := tc.Service.GetTestSubmission(c, submitId)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to get test submission")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get test submission"})
+		return
+	}
+	c.JSON(http.StatusOK, testResult)
+}
+
+func (tc *IeController) GetTestSubmissionByReadingId(c *gin.Context) {
+	readingId, err := strconv.ParseUint(c.Param("reading_id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	testResults, err := tc.Service.GetTestSubmissionByReadingId(c, readingId)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to get test submission by reading id")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get test submission by reading id"})
+		return
+	}
+	c.JSON(http.StatusOK, testResults)
+}
+
+func (tc *IeController) DeleteTestSubmission(c *gin.Context) {
+	submitId, err := strconv.ParseUint(c.Param("submit_id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+	err = tc.Service.DeleteTestSubmission(c, submitId)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to delete test submission")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete test submission"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "test submission deleted"})
+}
+
 func (tc *IeController) ExtractProposedWordsForArticle(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -159,6 +231,48 @@ func (tc *IeController) ExtractProposedWordsForArticle(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, words)
+}
+
+func (tc *IeController) HandleVocabProposalSubmit(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+
+	var proposals []ie.ProposeWord
+	err = c.ShouldBindJSON(&proposals)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to bind answers")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to bind answers"})
+		return
+	}
+
+	list, err := tc.Service.GenVocabListFromProposal(c, id, &proposals)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to gen vocab list from proposal")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to gen vocab list from proposal"})
+		return
+	}
+	c.JSON(http.StatusOK, list)
+}
+
+func (tc *IeController) GetVocabListByArticleId(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to parse id")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id"})
+		return
+	}
+
+	list, err := tc.Service.GetVocabListByArticleId(c, id)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("failed to get vocab list by article id")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get vocab list by article id"})
+		return
+	}
+	c.JSON(http.StatusOK, list)
 }
 
 func (tc *IeController) parsePagination(c *gin.Context, defaultPage, defaultSize uint64) (uint64, uint64) {

@@ -15,8 +15,8 @@ func (ir *IErepo) SaveArticleReading(ctx context.Context, articleReading *ie.Art
 	}
 
 	query := ir.db.QueryBuilder.Insert("article_reading").
-		Columns("article_id", "questions", "article_status", "score").
-		Values(articleReading.ArticleID, questionsJSON, articleReading.Status, articleReading.Score).
+		Columns("article_id", "questions", "article_status").
+		Values(articleReading.ArticleID, questionsJSON, articleReading.Status).
 		Suffix("RETURNING id")
 
 	sql, args, err := query.ToSql()
@@ -33,7 +33,7 @@ func (ir *IErepo) SaveArticleReading(ctx context.Context, articleReading *ie.Art
 }
 
 func (ir *IErepo) FindArticleReadingByID(ctx context.Context, id uint64) (*ie.ArticleReading, error) {
-	query := ir.db.QueryBuilder.Select("id", "article_id", "questions", "article_status", "score", "created_at", "updated_at").
+	query := ir.db.QueryBuilder.Select("id", "article_id", "questions", "article_status", "created_at", "updated_at").
 		From("article_reading").
 		Where("id = ?", id)
 
@@ -49,7 +49,6 @@ func (ir *IErepo) FindArticleReadingByID(ctx context.Context, id uint64) (*ie.Ar
 		&article.ArticleID,
 		&questionsJSON,
 		&article.Status,
-		&article.Score,
 		&article.CreatedAt,
 		&article.UpdatedAt)
 	if err != nil {
@@ -65,7 +64,7 @@ func (ir *IErepo) FindArticleReadingByID(ctx context.Context, id uint64) (*ie.Ar
 }
 
 func (ir *IErepo) FindReadingByArticleId(ctx context.Context, articleId uint64) (*ie.ArticleReading, error) {
-	query := ir.db.QueryBuilder.Select("id", "article_id", "questions", "article_status", "score", "created_at", "updated_at").
+	query := ir.db.QueryBuilder.Select("id", "article_id", "questions", "article_status", "created_at", "updated_at").
 		From("article_reading").
 		Where("article_id = ?", articleId).
 		Limit(1)
@@ -82,7 +81,6 @@ func (ir *IErepo) FindReadingByArticleId(ctx context.Context, articleId uint64) 
 		&article.ArticleID,
 		&questionsJSON,
 		&article.Status,
-		&article.Score,
 		&article.CreatedAt,
 		&article.UpdatedAt)
 	if err != nil {
@@ -121,7 +119,6 @@ func (ir *IErepo) UpdateArticleReading(ctx context.Context, articleReading *ie.A
 	query := ir.db.QueryBuilder.Update("article_reading").
 		Set("questions", questionsJSON).
 		Set("article_status", articleReading.Status).
-		Set("score", articleReading.Score).
 		Where("id = ?", articleReading.ID).
 		Suffix("RETURNING id")
 

@@ -77,7 +77,7 @@ func (ir *IErepo) FindAll(ctx context.Context, limit, skip uint64) ([]*ie.Articl
 	}
 	defer rows.Close()
 
-	var articles []*ie.Article
+	articles := []*ie.Article{}
 	for rows.Next() {
 		var article ie.Article
 		err = rows.Scan(

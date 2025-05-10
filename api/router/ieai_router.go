@@ -21,6 +21,14 @@ func NewIeAiRouter(app *bootstrap.Application, timeout time.Duration, publicRout
 	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/url", tc.ParseArticleFromUrl)
 	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/reading", tc.GetArticleReading)
 	privateRouter.PUT(DEFAULT_API_PREFIX+"/ie/article/:id/reading", tc.ReGenArticleReading)
+
+	privateRouter.POST(DEFAULT_API_PREFIX+"/ie/article/reading/:reading_id/submit", tc.SubmitReadingTest)
+	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/reading/:reading_id/submit", tc.GetTestSubmissionByReadingId)
+	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/reading/submit/:submit_id", tc.GetTestSubmission)
+	privateRouter.DELETE(DEFAULT_API_PREFIX+"/ie/article/reading/submit/:submit_id", tc.DeleteTestSubmission)
+
 	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/proposed_vocab", tc.ExtractProposedWordsForArticle)
+	privateRouter.POST(DEFAULT_API_PREFIX+"/ie/article/:id/proposed_vocab", tc.HandleVocabProposalSubmit)
+	privateRouter.GET(DEFAULT_API_PREFIX+"/ie/article/:id/vocab", tc.GetVocabListByArticleId)
 
 }
